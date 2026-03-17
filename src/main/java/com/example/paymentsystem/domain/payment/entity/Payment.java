@@ -1,11 +1,10 @@
 package com.example.paymentsystem.domain.payment.entity;
 
-import com.bootcamp.paymentdemo.common.entity.BaseEntity;
+import com.example.paymentsystem.common.entity.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 

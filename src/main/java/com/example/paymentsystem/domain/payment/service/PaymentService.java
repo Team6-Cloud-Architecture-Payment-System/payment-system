@@ -1,6 +1,6 @@
 package com.example.paymentsystem.domain.payment.service;
 
-import com.bootcamp.paymentdemo.domain.payment.repository.PaymentRepository;
+import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
