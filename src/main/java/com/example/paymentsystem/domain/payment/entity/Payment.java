@@ -1,6 +1,7 @@
 package com.example.paymentsystem.domain.payment.entity;
 
 import com.example.paymentsystem.common.entity.BaseEntity;
+import com.example.paymentsystem.domain.payment.status.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -21,17 +22,19 @@ public class Payment extends BaseEntity {
     private Long orderId;
     private Long payments_id;
     //Enum 클래스 생성 전 임시 status
-    private String payment_status;
+    private PaymentStatus payment_status;
     private Long payment_price;
-    private LocalDateTime payment_created_at;
+    private LocalDateTime createdAt;
     private LocalDateTime refund_created_at;
 
-    public Payment(Long orderId, Long payments_id, String payment_status, Long payment_price, LocalDateTime payment_created_at, LocalDateTime refund_created_at) {
+    public Payment(Long orderId, Long payments_id, PaymentStatus payment_status, Long payment_price) {
         this.orderId = orderId;
         this.payments_id = payments_id;
         this.payment_status = payment_status;
         this.payment_price = payment_price;
-        this.payment_created_at = payment_created_at;
-        this.refund_created_at = refund_created_at;
+    }
+
+    public void stateUpdate(PaymentStatus payment_status){
+        this.payment_status = payment_status;
     }
 }
