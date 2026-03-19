@@ -1,8 +1,8 @@
-package com.example.paymentsystem.domain.point.dto;
-
-
-import com.example.paymentsystem.domain.auth.entity.User;
-
+//package com.example.paymentsystem.domain.point.dto;
+//
+//
+//import com.example.paymentsystem.domain.auth.entity.User;
+//
 //public record GetMyPointResponse(
 //        Long userId,
 //        Long point

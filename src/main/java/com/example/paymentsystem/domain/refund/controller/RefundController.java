@@ -30,11 +30,11 @@
 //    @GetMapping("/orders/{orderId}/refunds")
 //    public ResponseEntity<ApiResponse<GetRefundResponse>> getRefund(
 //            @PathVariable Long orderId,
-//            @AuthenticationPrincipal(expression = "id") Long userId) {
+//            @RequestParam Long userId) {
 //        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(refundService.getRefund(orderId, userId)));
 //    }
-
-//    @GetMapping("/refunds/me")
-//    public ResponseEntity<ApiResponse<>>
-
+//
+////    @GetMapping("/refunds/me")
+////    public ResponseEntity<ApiResponse<>>
+//
 //}

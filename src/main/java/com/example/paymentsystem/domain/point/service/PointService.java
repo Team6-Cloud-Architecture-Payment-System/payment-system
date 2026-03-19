@@ -11,10 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 //@Service
 //@RequiredArgsConstructor
 //public class PointService {
-
+//
 //    private final PointRepository pointRepository;
 //    private final UserRepository userRepository;
-
+//
 //    @Transactional(readOnly = true)
 //    public GetMyPointResponse getMyPoint(Long userId) {
 //        User user = userRepository.findById(userId).orElseThrow(
