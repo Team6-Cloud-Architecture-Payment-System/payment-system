@@ -46,7 +46,8 @@ public class Webhook {
 
         webhook.webhookId = webhookId;  // Header에서 받은 값
         webhook.paymentId = dto.data().paymentId();
-        webhook.eventStatus = WebhookStatus.RECEIVED;
+        webhook.eventStatus= dto.data().eventStatus();
+        webhook.status= WebhookStatus.RECEIVED;
         webhook.receptionCreateAt = LocalDateTime.now();
 
         return webhook;

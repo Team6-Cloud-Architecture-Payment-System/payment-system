@@ -3,17 +3,17 @@ package com.example.paymentsystem.domain.point.dto;
 
 import com.example.paymentsystem.domain.auth.entity.User;
 
-//public record GetMyPointResponse(
-//        Long userId,
-//        Long point
-//) {
-//    public GetMyPointResponse(User user) {
-//        this(
-//                user.getId(),
-//                user.getPoint()
-//        );
-//    }
-//}
+public record GetMyPointResponse(
+        Long userId,
+        Long point
+) {
+    public GetMyPointResponse(User user) {
+        this(
+                user.getId(),
+                user.getPoint()
+        );
+    }
+}
 /* User.user_point      → 현재 잔액 (스냅샷)
    Point.point          → 변동액 (이력)
 
