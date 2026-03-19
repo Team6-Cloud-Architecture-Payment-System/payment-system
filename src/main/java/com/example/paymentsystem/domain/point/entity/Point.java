@@ -1,7 +1,7 @@
 package com.example.paymentsystem.domain.point.entity;
 
 import com.example.paymentsystem.domain.order.entity.Order;
-import com.example.paymentsystem.domain.user.entity.User;
+import com.example.paymentsystem.domain.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
