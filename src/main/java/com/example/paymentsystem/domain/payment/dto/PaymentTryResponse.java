@@ -1,7 +1,7 @@
 package com.example.paymentsystem.domain.payment.dto;
 
 import com.example.paymentsystem.domain.payment.entity.Payment;
-import com.example.paymentsystem.domain.payment.status.PaymentStatus;
+import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
 
 public record PaymentTryResponse(
         Long id,
@@ -13,7 +13,7 @@ public record PaymentTryResponse(
     public PaymentTryResponse(Payment payment) {
         this(
                 payment.getId(),
-                payment.getOrderId(),
+                payment.getOrder().getId(),
                 payment.getPayment_status(),
                 payment.getPayment_price()
         );

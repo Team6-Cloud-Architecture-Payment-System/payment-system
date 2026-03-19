@@ -1,4 +1,4 @@
-package com.example.paymentsystem.domain.payment.status;
+package com.example.paymentsystem.domain.payment.entity;
 
 public enum PaymentStatus {
     WAIT("대기"),
