@@ -11,7 +11,7 @@ public record GetRefundResponse (
     Long refundPrice,
     String refundReason,
     RefundStatus status,
-    LocalDateTime refundCreatedAt
+    LocalDateTime createdAt
 ){
     public GetRefundResponse(Refund refund) {
         this(
@@ -20,7 +20,7 @@ public record GetRefundResponse (
                 refund.getRefundPrice(),
                 refund.getRefundReason(),
                 refund.getStatus(),
-                refund.getRefundCreatedAt()
+                refund.getCreatedAt()
                 );
     }
 }

@@ -1,7 +1,7 @@
 package com.example.paymentsystem.domain.point.entity;
 
-import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.auth.entity.User;
+import com.example.paymentsystem.domain.order.entity.Order;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,10 +13,10 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "points")
+@Table(name = "pointHistories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class Point {
+public class PointHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -43,7 +43,7 @@ public class Point {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    public Point(Long point, Type type, User user, Order order) {
+    public PointHistory(Long point, Type type, User user, Order order) {
         this.point = point;
         this.type = type;
         this.user = user;

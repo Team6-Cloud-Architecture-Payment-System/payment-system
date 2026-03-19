@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +14,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "refunds")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(AuditingEntityListener.class)
 public class Refund {
+    // BaseEntity를 받아 사용할지 안 할지 결정
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,19 +32,20 @@ public class Refund {
     @Column(nullable = false)
     private String refundReason;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private RefundStatus status;
 
     @CreatedDate
-    @Column(nullable = false)
-    private LocalDateTime refundCreatedAt;
+    @Column(updatable = false, nullable = false)
+    private LocalDateTime createdAt;
 
-    public Refund(Payment payment, Long refundPrice, String refundReason, RefundStatus status,  LocalDateTime refundCreatedAt) {
+
+    public Refund(Payment payment, Long refundPrice, String refundReason, RefundStatus status) {
         this.payment = payment;
         this.refundPrice = refundPrice;
         this.refundReason = refundReason;
         this.status = status;
-        this.refundCreatedAt = refundCreatedAt;
     }
 
 }

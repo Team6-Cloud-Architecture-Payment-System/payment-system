@@ -12,11 +12,11 @@ public record CreateRefundResponse(
         Long refundPrice,
         String refundReason,
         RefundStatus status,
-        LocalDateTime refundCreatedAt
+        LocalDateTime createdAt
 
 ) {
     public CreateRefundResponse(Refund refund) {
         this(refund.getId(), refund.getPayment().getId(), refund.getRefundPrice(),
-                refund.getRefundReason(), refund.getStatus(), refund.getRefundCreatedAt());
+                refund.getRefundReason(), refund.getStatus(), refund.getCreatedAt());
     }
 }
