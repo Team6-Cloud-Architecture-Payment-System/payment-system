@@ -1,4 +1,6 @@
 package com.example.paymentsystem.domain.auth.dto.response;
 
-public class LogOutResponse {
-}
+public record LogOutResponse(
+        boolean success,
+        String message
+) {}

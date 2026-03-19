@@ -1,4 +1,13 @@
 package com.example.paymentsystem.domain.auth.dto.response;
 
-public record SignUpResponse() {
+import com.example.paymentsystem.domain.auth.entity.User;
+
+public record SignUpResponse(
+        Long id,
+        String email,
+        String name
+) {
+    public static SignUpResponse from (User user) {
+        return new SignUpResponse(user.getId(), user.getEmail(), user.getName());
+    }
 }
