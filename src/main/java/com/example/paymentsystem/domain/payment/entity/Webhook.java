@@ -25,7 +25,7 @@ public class Webhook {
     private String paymentId;
 
     @Column(nullable = false)
-    private String eventStatus;
+    private WebhookStatus eventStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -37,6 +37,7 @@ public class Webhook {
     @Column
     private LocalDateTime doneCreateAt;
 
+    //Todo eum을 여기에 넣어보기 webhookStatus
     /**
      * 포트원 DTO를 받아 엔티티를 생성하는 정적 팩토리 메서드
      */
@@ -45,22 +46,15 @@ public class Webhook {
 
         webhook.webhookId = webhookId;  // Header에서 받은 값
         webhook.paymentId = dto.data().paymentId();
-        webhook.eventStatus = dto.data().eventStatus();
-        webhook.status = WebhookStatus.RECEIVED;
+        webhook.eventStatus = WebhookStatus.RECEIVED;
         webhook.receptionCreateAt = LocalDateTime.now();
 
         return webhook;
     }
 
-    public void statusUpdate(WebhookStatus status) {
-        this.status = status;
-        if (status == WebhookStatus.PROCESSED || status == WebhookStatus.FAILED) {
-            this.doneCreateAt = LocalDateTime.now();
-        }
-    }
-
-    public void eventStatusUpdate(String eventStatus) {
+    public void eventStatusUpdate(WebhookStatus eventStatus) {
         this.eventStatus = eventStatus;
+        this.receptionCreateAt = LocalDateTime.now();
     }
 
 

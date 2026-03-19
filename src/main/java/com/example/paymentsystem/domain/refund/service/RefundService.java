@@ -3,7 +3,6 @@ package com.example.paymentsystem.domain.refund.service;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
-import com.example.paymentsystem.domain.payment.status.PaymentStatus;
 import com.example.paymentsystem.domain.refund.dto.CreateRefundRequest;
 import com.example.paymentsystem.domain.refund.dto.CreateRefundResponse;
 import com.example.paymentsystem.domain.refund.dto.GetRefundResponse;

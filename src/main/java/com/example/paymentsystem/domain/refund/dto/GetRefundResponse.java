@@ -16,7 +16,7 @@ public record GetRefundResponse (
     public GetRefundResponse(Refund refund) {
         this(
                 refund.getId(),
-                refund.getPayment().getOrderId(),
+                refund.getPayment().getOrder().getId(),
                 refund.getRefundPrice(),
                 refund.getRefundReason(),
                 refund.getStatus(),
