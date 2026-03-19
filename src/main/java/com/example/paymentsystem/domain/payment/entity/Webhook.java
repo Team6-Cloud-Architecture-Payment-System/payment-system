@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "webhook")
+@Table(name = "webhooks")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Webhook {
 
@@ -25,7 +25,7 @@ public class Webhook {
     private String paymentId;
 
     @Column(nullable = false)
-    private WebhookStatus eventStatus;
+    private String eventStatus;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -52,9 +52,15 @@ public class Webhook {
         return webhook;
     }
 
-    public void eventStatusUpdate(WebhookStatus eventStatus) {
+    public void statusUpdate(WebhookStatus status) {
+        this.status = status;
+        if (status == WebhookStatus.PROCESSED || status == WebhookStatus.FAILED) {
+            this.doneCreateAt = LocalDateTime.now();
+        }
+    }
+
+    public void eventStatusUpdate(String eventStatus) {
         this.eventStatus = eventStatus;
-        this.receptionCreateAt = LocalDateTime.now();
     }
 
 
