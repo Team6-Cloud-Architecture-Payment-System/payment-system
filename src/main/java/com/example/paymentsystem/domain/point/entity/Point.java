@@ -1,24 +1,39 @@
 package com.example.paymentsystem.domain.point.entity;
 
-import com.example.paymentsystem.common.entity.BaseEntity;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
 
 @Getter
 @Entity
 @Table(name = "points")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Point extends BaseEntity {
+@EntityListeners(AuditingEntityListener.class)
+public class Point {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
+    private Long point;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private Type type;
+
+    @CreatedDate
+    @Column(updatable = false, nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(updatable = false)
+    private LocalDateTime expiredAt;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -28,7 +43,8 @@ public class Point extends BaseEntity {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    public Point(Type type, User user, Order order) {
+    public Point(Long point, Type type, User user, Order order) {
+        this.point = point;
         this.type = type;
         this.user = user;
         this.order = order;
