@@ -49,6 +49,8 @@ public class SecurityConfig {
 
                                 // 템플릿 페이지 렌더링 허용 (html 파일)
                                 .requestMatchers(HttpMethod.GET, "/").permitAll()
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/pages/**").permitAll()
                                 
                                 // Public API 엔드포인트 허용

@@ -1,8 +1,6 @@
 package com.example.paymentsystem.domain.auth.entity;
 
 import com.example.paymentsystem.common.entity.BaseEntity;
-import com.example.paymentsystem.domain.membershipTier.entity.MembershipTier;
-import com.example.paymentsystem.domain.point.entity.PointHistory;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -38,20 +36,16 @@ public class User extends BaseEntity {
     )
     private String password;
 
-    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JoinColumn(name = "point_id")
-    private PointHistory point;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "membership_id")
-    private MembershipTier membership;
+    private String refreshToken;
 
     @Builder
-    public User(String name, String email, String password, PointHistory point, MembershipTier membership) {
+    public User(String name, String email, String password, Long point, Long membership) {
         this.name = name;
         this.email = email;
         this.password = password;
-        this.point = point;
-        this.membership = membership;
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }

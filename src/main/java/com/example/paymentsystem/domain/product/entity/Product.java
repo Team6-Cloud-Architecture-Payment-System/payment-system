@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name="product")
+@Table(name="products")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Product extends BaseEntity {
     @Id
@@ -27,6 +27,7 @@ public class Product extends BaseEntity {
     @Column(nullable = false)
     private String detail;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProductStatus status;
 
