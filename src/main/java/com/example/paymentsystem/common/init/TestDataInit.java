@@ -56,7 +56,8 @@ public class TestDataInit implements ApplicationRunner {
                             200L,
                             "훈련에 딱 맞는 한입 사이즈 치킨맛 간식",
                             ProductStatus.FOR_SALE,
-                            "강아지 간식"
+                            "강아지 간식",
+                            ""
                     ),
                     new Product(
                             2500L,
@@ -64,7 +65,8 @@ public class TestDataInit implements ApplicationRunner {
                             120L,
                             "구강 케어에 도움을 주는 연어 향 덴탈 스틱",
                             ProductStatus.FOR_SALE,
-                            "강아지 간식"
+                            "강아지 간식",
+                            ""
                     ),
                     new Product(
                             1800L,
@@ -72,7 +74,8 @@ public class TestDataInit implements ApplicationRunner {
                             150L,
                             "소고기 풍미의 바삭한 비스킷",
                             ProductStatus.FOR_SALE,
-                            "강아지 간식"
+                            "강아지 간식",
+                            ""
                     ),
                     new Product(
                             3200L,
@@ -80,7 +83,8 @@ public class TestDataInit implements ApplicationRunner {
                             80L,
                             "고구마로 만든 크런치 쿠키(기호성 좋은 간식)",
                             ProductStatus.FOR_SALE,
-                            "강아지 간식"
+                            "강아지 간식",
+                            ""
                     ),
                     new Product(
                             4100L,
@@ -88,7 +92,8 @@ public class TestDataInit implements ApplicationRunner {
                             70L,
                             "야채와 닭가슴살 베이스의 상쾌한 리프레시 간식",
                             ProductStatus.FOR_SALE,
-                            "강아지 간식"
+                            "강아지 간식",
+                            ""
                     ),
                     new Product(
                             5000L,
@@ -96,7 +101,8 @@ public class TestDataInit implements ApplicationRunner {
                             60L,
                             "오리 저키 프리미엄, 쫄깃한 식감의 고급 간식",
                             ProductStatus.FOR_SALE,
-                            "강아지 간식"
+                            "강아지 간식",
+                            ""
                     )
             );
 

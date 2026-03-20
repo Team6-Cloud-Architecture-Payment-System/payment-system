@@ -308,7 +308,7 @@
                     </td>
                     <td style="padding: 0.75rem; text-align: center;">
                         ${order.orderStatus === '결제 대기' ?
-                            `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="payOrder('${order.orderId}', ${finalAmount})">
+                            `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="payOrder('${order.orderId}')">
                                 💳 결제하기
                             </button>` :
                             `<span style="color: var(--text-secondary); font-size: 0.875rem;">-</span>`
@@ -321,7 +321,7 @@
         }
 
         // 주문 결제하기
-        async function payOrder(orderId, totalAmount) {
+        async function payOrder(orderId) {
             if (!currentUser) {
                 showNotification('⚠️ 사용자 정보를 먼저 로드해주세요', 'warning');
                 return;
@@ -335,10 +335,16 @@
             }
 
             try {
+                // 백엔드는 Order.totalPrice와 PaymentTryRequest.payment_price를 비교 중
+                // PortOne 결제창 금액은 사용자가 결제하는 최종 금액(paymentPrice)을 사용
+                const backendPaymentPrice = Number(order.totalPrice ?? 0);
+                const portOneTotalAmount = Number(order.paymentPrice ?? order.totalPrice ?? 0);
+
                 const paymentData = {
                     orderId: orderId,
                     orderName: `주문 ${order.orderNumber}`,  // 주문 번호로 표시
-                    totalAmount: totalAmount,
+                    totalAmount: portOneTotalAmount,
+                    backendPaymentPrice: backendPaymentPrice,
                     currency: 'KRW',
                     payMethod: 'CARD',
                     customer: {
