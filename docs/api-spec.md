@@ -808,7 +808,7 @@ Content-Type: application/json
 
 ## 🔐 인증/인가 (Auth)
 
-### POST /api/signup — 회원가입
+### POST /api/auth/signup — 회원가입
 
 **Description** : 회원가입을 처리합니다.
 
@@ -866,7 +866,7 @@ Content-Type: application/json
 
 ---
 
-### POST /api/login — 로그인
+### POST /api/auth/login — 로그인
 
 **Description** : 로그인을 처리합니다.
 
@@ -921,7 +921,7 @@ Content-Type: application/json
 
 ---
 
-### POST /api/logout — 로그아웃
+### POST /api/auth/logout — 로그아웃
 
 **Description** : 로그아웃을 처리합니다.
 
