@@ -6,9 +6,9 @@ import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
 public record PaymentTryResponse(
         Long id,
         Long orderId,
-        PaymentStatus paymentStatus,
+        PaymentStatus payment_status,
         String paymentId,
-        Long paymentPrice
+        Long payment_price
         ) {
 
     public PaymentTryResponse(Payment payment) {
@@ -16,7 +16,7 @@ public record PaymentTryResponse(
                 payment.getId(),
                 payment.getOrder().getId(),
                 payment.getPaymentStatus(),
-                payment.getPaymentId(),
+                payment.getPaymentsId(),
                 payment.getPaymentPrice()
         );
     }
