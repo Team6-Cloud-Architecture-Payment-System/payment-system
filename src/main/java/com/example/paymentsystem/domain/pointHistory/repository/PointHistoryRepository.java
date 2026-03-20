@@ -1,10 +1,10 @@
-package com.example.paymentsystem.domain.point.repository;
+package com.example.paymentsystem.domain.pointHistory.repository;
 
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.order.entity.Order;
-import com.example.paymentsystem.domain.point.dto.GetPointTransactionHistory;
-import com.example.paymentsystem.domain.point.entity.PointHistory;
-import com.example.paymentsystem.domain.point.entity.Type;
+import com.example.paymentsystem.domain.pointHistory.dto.GetPointTransactionHistory;
+import com.example.paymentsystem.domain.pointHistory.entity.PointHistory;
+import com.example.paymentsystem.domain.pointHistory.entity.Type;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

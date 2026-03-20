@@ -1,4 +1,4 @@
-package com.example.paymentsystem.domain.point.entity;
+package com.example.paymentsystem.domain.pointHistory.entity;
 
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.order.entity.Order;

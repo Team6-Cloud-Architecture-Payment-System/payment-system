@@ -1,8 +1,8 @@
-package com.example.paymentsystem.domain.point.controller;
+package com.example.paymentsystem.domain.pointHistory.controller;
 
 import com.example.paymentsystem.common.dto.ApiResponse;
-import com.example.paymentsystem.domain.point.dto.GetPointTransactionHistory;
-import com.example.paymentsystem.domain.point.service.PointHistoryService;
+import com.example.paymentsystem.domain.pointHistory.dto.GetPointTransactionHistory;
+import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
