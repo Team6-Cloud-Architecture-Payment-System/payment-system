@@ -37,7 +37,7 @@ public class Payment extends BaseEntity {
         this.paymentPrice = paymentPrice;
     }
 
-    public void stateUpdate(PaymentStatus payment_status){
-        this.paymentStatus = payment_status;
+    public void stateUpdate(PaymentStatus paymentStatus){
+        this.paymentStatus = paymentStatus;
     }
 }
