@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
+//@AllArgsConstructor
 public class PortOneResponseDto {
 
     //가져와야할 항목 : 결제 상태, 결제된 총금액(amount>total)
