@@ -152,23 +152,20 @@ public class OrderService {
 
         // TODO: 주문 확정 시 포인트 지급 로직 연결
     }
+
     // 5일 뒤면 자동으로 주문 확정
     @Transactional
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 6 * * *")
     public void autoConfirmOrders() {
+        LocalDateTime targetTime = LocalDateTime.now().minusDays(5);
 
-        List<Order> orders = orderRepository.findAllByOrderStatus(OrderStatus.ORDER_COMPLETED);
-
-        LocalDateTime now = LocalDateTime.now();
+        List<Order> orders = orderRepository.findOrdersReadyForAutoConfirm(targetTime);
 
         for (Order order : orders) {
-            if (order.canAutoConfirm(now)) {
-                order.confirm();
-                // TODO: 자동 주문 확정 시 포인트 지급 로직 연결
-            }
+            order.confirm();
+            // TODO: 자동 주문 확정 시 포인트 지급 로직 연결
         }
     }
-
 
     // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
 
