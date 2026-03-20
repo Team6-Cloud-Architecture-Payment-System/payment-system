@@ -1,4 +1,4 @@
-package com.example.paymentsystem.domain.point.entity;
+package com.example.paymentsystem.domain.pointHistory.entity;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

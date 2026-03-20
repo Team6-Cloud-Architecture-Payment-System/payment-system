@@ -1,4 +1,4 @@
-package com.example.paymentsystem.domain.point.entity;
+package com.example.paymentsystem.domain.pointHistory.entity;
 
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.order.entity.Order;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 @Getter
 @Entity
-@Table(name = "pointHistories")
+@Table(name = "point_histories")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
 public class PointHistory {
