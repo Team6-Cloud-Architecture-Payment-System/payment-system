@@ -30,6 +30,7 @@ import static org.springframework.boot.security.autoconfigure.web.servlet.PathRe
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -45,22 +46,22 @@ public class SecurityConfig {
 
                 // 요청 권한 설정
                 .authorizeHttpRequests(authorize -> authorize
-                                // 정적 리소스 (css, js, images 등) 허용
-                                .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
-                                // H2 Console 허용
-                                .requestMatchers(toH2Console()).permitAll()
+                        // 정적 리소스 (css, js, images 등) 허용
+                        .requestMatchers(toStaticResources().atCommonLocations()).permitAll()
+                        // H2 Console 허용
+                        .requestMatchers(toH2Console()).permitAll()
 
-                                // 템플릿 페이지 렌더링 허용 (html 파일)
-                                .requestMatchers(HttpMethod.GET, "/", "/home").permitAll()
-                                .requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                        // 템플릿 페이지 렌더링 허용 (html 파일)
+                        .requestMatchers(HttpMethod.GET, "/", "/home").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/pages/**").permitAll()
-                                
-                                // Public API 엔드포인트 허용
-                                .requestMatchers("/api/public/**").permitAll()
+
+                        // Public API 엔드포인트 허용
+                        .requestMatchers("/api/public/**").permitAll()
 
                         // 나머지 전부 인증 필요
-                        // .anyRequest().authenticated
+                        .anyRequest().authenticated()
 
                 ).addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
                         UsernamePasswordAuthenticationFilter.class);

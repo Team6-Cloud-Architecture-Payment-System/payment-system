@@ -18,6 +18,17 @@ async function makeApiRequest(endpointKey, options = {}) {
         returnHeaders = false
     } = options;
 
+    const isApiResponse = (value) => {
+        // 백엔드 공통 응답: { success, data, message }
+        return (
+            value &&
+            typeof value === 'object' &&
+            Object.prototype.hasOwnProperty.call(value, 'success') &&
+            Object.prototype.hasOwnProperty.call(value, 'data') &&
+            Object.prototype.hasOwnProperty.call(value, 'message')
+        );
+    };
+
     try {
         // 설정에서 엔드포인트 계약 가져오기
         const config = await getConfig();
@@ -82,6 +93,12 @@ async function makeApiRequest(endpointKey, options = {}) {
             // HTTP 에러 발생 시 예외 throw
             const errorMessage = data.message || data.error || `HTTP ${response.status}: ${response.statusText}`;
             throw new Error(errorMessage);
+        }
+
+        // ApiResponse 래핑 응답 공통 처리
+        if (isApiResponse(data) && data.success === false) {
+            displayError(data);
+            throw new Error(data.message || 'API 요청 실패');
         }
 
         displaySuccess(data);

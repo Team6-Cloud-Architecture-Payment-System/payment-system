@@ -335,6 +335,8 @@ Authorization: Bearer {token}
 
 ```json
 {
+  "paymentId": 1,
+  "refundPrice": 300000,
   "refundReason": "배송이 너무 늦게왔어요."
 }
 ```
@@ -574,54 +576,6 @@ Authorization: Bearer {token}
 
 ## 🎯 포인트 (Point)
 
-### GET /api/points/me — 내 포인트 조회
-
-**Description** : 사용자 자신의 남은 포인트를 조회합니다.
-
-**Header**
-
-```
-Content-Type: application/json
-Authorization: Bearer {token}
-```
-
-**Request Body** : 없음
-
-**Response Body**
-
-```json
-{
-  "status": "SUCCESS",
-  "message": "포인트 조회가 완료되었습니다.",
-  "data": {
-    "userId": 1,
-    "myPoint": 5000
-  }
-}
-```
-
-**Error**
-
-```json
-{
-  "status": 401,
-  "code": "AUTH_TOKEN_INVALID",
-  "message": "인증 정보가 없거나 세션이 만료되었습니다. 다시 로그인 후 이용해주세요.",
-  "timestamp": "2026-03-18T19:20:00"
-}
-```
-
-```json
-{
-  "status": 404,
-  "code": "USER_POINT_NOT_FOUND",
-  "message": "해당 사용자의 포인트 정보를 찾을 수 없습니다.",
-  "timestamp": "2026-03-18T19:20:00"
-}
-```
-
----
-
 ### GET /api/points/me/history — 포인트 거래 내역 조회
 
 **Description** : 사용자의 포인트 거래 내역을 모두 조회합니다.
@@ -825,7 +779,7 @@ Content-Type: application/json
   "email": "user@example.com",
   "password": "securePassword123!",
   "name": "홍길동",
-  "phone": "010-1234-5678"
+  "phoneNumber": "01012345678"
 }
 ```
 
@@ -839,7 +793,7 @@ Content-Type: application/json
     "id": 1,
     "email": "user@example.com",
     "name": "홍길동",
-    "phone": "010-1234-5678"
+    "phoneNumber": "01012345678"
   }
 }
 ```
@@ -893,9 +847,8 @@ Content-Type: application/json
   "message": "요청이 성공했습니다.",
   "data": {
     "accessToken": "eyJhbGciOiJIUzI1...",
-    "tokenType": "Bearer",
-    "expiresIn": 3600
-  }
+    "grantType": "Bearer",
+      }
 }
 ```
 
@@ -913,7 +866,7 @@ Content-Type: application/json
 ```json
 {
   "status": 400,
-  "code": "PASSWORD_NOT_CORRECT",
+  "code": "WRONG_PASSWORD",
   "message": "비밀번호가 일치하지 않습니다.",
   "timestamp": "2026-03-17T12:30:00"
 }
@@ -930,14 +883,6 @@ Content-Type: application/json
 ```
 Content-Type: application/json
 Authorization: Bearer {AccessToken}
-```
-
-**Request Body**
-
-```json
-{
-  "refreshToken": "eyJhbGciOiJIUzI1..."
-}
 ```
 
 **Response Body**
@@ -964,13 +909,50 @@ Authorization: Bearer {AccessToken}
 ```json
 {
   "status": 403,
-  "code": "NOT_AUTHORIZED",
+  "code": "UNAUTHORIZED",
   "message": "유효하지 않거나 만료된 토큰입니다.",
   "timestamp": "2026-03-17T12:30:00"
 }
 ```
 
 ---
+
+### GET /api/auth/me — 내 정보 조회
+
+**Description** : 사용자 자신의 정보를 조회합니다.
+
+**Header**
+
+```
+Content-Type: application/json
+Authorization: Bearer {token}
+```
+
+**Response Body**
+
+```json
+{
+  "status": "SUCCESS",
+  "message": "요청이 성공했습니다.",
+  "data": {
+	  "name": "홍길동",
+    "email": "user@example.com",
+    "phoneNumber": "01012345678",
+    "point": 20000
+  }
+}
+```
+
+**Error**
+
+```json
+{
+  "status": 401,
+  "code": "AUTH_TOKEN_INVALID",
+  "message": "인증 정보가 없거나 세션이 만료되었습니다. 다시 로그인 후 이용해주세요.",
+  "timestamp": "2026-03-18T19:20:00"
+}
+```
 
 ## 🛍️ 상품 (Product)
 
@@ -1098,7 +1080,7 @@ webhook-timestamp: 100
 
 ```
 Content-Type: application/json
-Authorization: PortOne {token}
+Authorization: PortOne {PORTONE_API_SECRET}
 ```
 
 **Response Body**
@@ -1114,6 +1096,14 @@ Authorization: PortOne {token}
 ```
 
 **Error**
+
+```json
+404 Not Found
+{
+  "type": "PAYMENT_NOT_FOUND",
+  "message": "payment not found"
+}
+```
 
 ```json
 {
