@@ -9,7 +9,8 @@ public record ProductListResponse(
         Long price,
         Long stock,
         ProductStatus status,
-        String category
+        String category,
+        String imgUrl
 ) {
     public static ProductListResponse from(Product product) {
         return new ProductListResponse(
@@ -18,7 +19,8 @@ public record ProductListResponse(
                 product.getPrice(),
                 product.getStock(),
                 product.getStatus(),
-                product.getCategory()
+                product.getCategory(),
+                product.getImgUrl()
         );
     }
 }
