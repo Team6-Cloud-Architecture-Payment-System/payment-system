@@ -1,7 +1,6 @@
 package com.example.paymentsystem.domain.payment.controller;
 
 import com.example.paymentsystem.common.dto.ApiResponse;
-import com.example.paymentsystem.domain.payment.dto.PaymentConfirmRequest;
 import com.example.paymentsystem.domain.payment.dto.PaymentTryRequest;
 import com.example.paymentsystem.domain.payment.dto.WebhookRequestDto;
 import com.example.paymentsystem.domain.payment.service.PaymentService;
@@ -44,9 +43,10 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(paymentService.tryPayment(orderId, request)));
     }
 
+    // Controller 예시
     @PatchMapping("/api/orders/{orderId}/payments/confirm")
-    public ResponseEntity<ApiResponse<Void>> completePayment(@RequestBody PaymentConfirmRequest request) {
-        ApiResponse.success(paymentService.confirmPayment(request));
+    public ResponseEntity<Void> completePayment(@RequestBody PaymentConfirmRequest request) {
+        paymentService.confirmPayment(request.paymentId());
         return ResponseEntity.ok().build();
     }
 }
