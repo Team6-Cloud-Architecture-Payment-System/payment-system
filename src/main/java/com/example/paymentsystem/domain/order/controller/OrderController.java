@@ -2,13 +2,15 @@ package com.example.paymentsystem.domain.order.controller;
 import com.example.paymentsystem.domain.order.dto.CreateOrderRequest;
 import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
 import com.example.paymentsystem.domain.order.service.OrderService;
+import com.sun.security.auth.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RequiredArgsConstructor
@@ -19,10 +21,10 @@ public class OrderController {
 
     @PostMapping
     public ResponseEntity<CreateOrderResponse> create(
-            // 어떤 유저가 주문하는지 확인
-            @RequestParam Long userId,
+            Authentication authentication,
             @Valid @RequestBody CreateOrderRequest request
     ) {
+        Long userId = (Long) authentication.getPrincipal();
         CreateOrderResponse response = orderService.create(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
