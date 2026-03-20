@@ -45,8 +45,8 @@ public class RefundService {
             throw new IllegalStateException("결제 완료 상태가 아니면 환불할 수 없습니다.");
         }
         // 주문 상태 검증
-        if (payment.getOrder().getOrderStatus() != OrderStatus.ORDER_CONFIRMED) {
-            throw new IllegalStateException("주문 확정 상태가 아니면 환불할 수 없습니다.");
+        if (payment.getOrder().getOrderStatus() != OrderStatus.ORDER_COMPLETED) {
+            throw new IllegalStateException("주문 완료 상태가 아니면 환불할 수 없습니다.");
         }
 
         // 이미 환불 레코드가 존재하는지
