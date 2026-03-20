@@ -57,7 +57,7 @@ public class TestDataInit implements ApplicationRunner {
                             "훈련에 딱 맞는 한입 사이즈 치킨맛 간식",
                             ProductStatus.FOR_SALE,
                             "강아지 간식",
-                            ""
+                            "https://3p-image.kurly.com/files/6f268fe3-e246-47c3-a211-051c69391e95/ee27035d-5113-42d5-9d96-9d56c2f056dc.png"
                     ),
                     new Product(
                             2500L,
@@ -66,7 +66,7 @@ public class TestDataInit implements ApplicationRunner {
                             "구강 케어에 도움을 주는 연어 향 덴탈 스틱",
                             ProductStatus.FOR_SALE,
                             "강아지 간식",
-                            ""
+                            "https://cdn.daisomall.co.kr/file/resize/PD/20241204/thumb/850/thEMoHiuIvggUCaC7O6h1060695_00_00thEMoHiuIvggUCaC7O6h.jpg"
                     ),
                     new Product(
                             1800L,
@@ -75,7 +75,7 @@ public class TestDataInit implements ApplicationRunner {
                             "소고기 풍미의 바삭한 비스킷",
                             ProductStatus.FOR_SALE,
                             "강아지 간식",
-                            ""
+                            "https://images.pet-friends.co.kr/storage/pet_friends/product/id/d/f/3/9/b/3/c/df39b3ca42499350de099d3ce31bbee9/10000/f6f2c286bfd6bfb293e5e9c31766b433.jpeg"
                     ),
                     new Product(
                             3200L,
@@ -84,7 +84,7 @@ public class TestDataInit implements ApplicationRunner {
                             "고구마로 만든 크런치 쿠키(기호성 좋은 간식)",
                             ProductStatus.FOR_SALE,
                             "강아지 간식",
-                            ""
+                            "https://thumbnail.coupangcdn.com/thumbnails/remote/492x492ex/image/vendor_inventory/c95b/06d741a587a2fc79879f79cffa2190e7f6417ba8c32e1c41775e722eb109.png"
                     ),
                     new Product(
                             4100L,
@@ -93,7 +93,7 @@ public class TestDataInit implements ApplicationRunner {
                             "야채와 닭가슴살 베이스의 상쾌한 리프레시 간식",
                             ProductStatus.FOR_SALE,
                             "강아지 간식",
-                            ""
+                            "https://thumbnail.coupangcdn.com/thumbnails/remote/300x300ex/image/vendor_inventory/ee83/e1df5cae3e73e3a4b1fdd22e4f4e3f2c40bb5374cf4540700e6f71940dc8.png"
                     ),
                     new Product(
                             5000L,
@@ -102,7 +102,7 @@ public class TestDataInit implements ApplicationRunner {
                             "오리 저키 프리미엄, 쫄깃한 식감의 고급 간식",
                             ProductStatus.FOR_SALE,
                             "강아지 간식",
-                            ""
+                            "https://images.pet-friends.co.kr/storage/pet_friends/product/id/3/e/8/3/4/7/3/3e8347333c9c1927035e031f78df17d1/10000/8f52de3beda7edbdbf59429652598854.jpeg"
                     )
             );
 

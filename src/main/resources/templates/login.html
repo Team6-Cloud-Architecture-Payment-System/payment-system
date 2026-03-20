@@ -15,6 +15,14 @@
     <script th:src="@{/js/api-validator.js}"></script>
 </head>
 <body>
+    <!-- Pop Art Loading Fallback -->
+    <div id="pop-loader" class="pop-loader-overlay">
+        <div class="pop-loader-text">LOADING...</div>
+        <div class="pop-progress-bar-container">
+            <div id="pop-progress-fill" class="pop-progress-bar-fill"></div>
+        </div>
+    </div>
+
     <div class="auth-layout">
         <div class="auth-container">
             <div class="auth-header-wrapper">
@@ -106,7 +114,24 @@
                         if (refreshToken) {
                             saveRefreshToken(refreshToken);
                         }
-                        window.location.href = '/home';
+                        
+                        // Play Pop Art loading animation
+                        const loader = document.getElementById('pop-loader');
+                        const fill = document.getElementById('pop-progress-fill');
+                        if (loader && fill) {
+                            loader.classList.add('active');
+                            
+                            // Trigger CSS transition for progress bar
+                            setTimeout(() => {
+                                fill.style.width = '100%';
+                            }, 50);
+
+                            setTimeout(() => {
+                                window.location.href = '/home';
+                            }, 1500);
+                        } else {
+                            window.location.href = '/home';
+                        }
                     } else {
                         errorText.textContent = '토큰을 받을 수 없습니다.';
                         errorMessage.style.display = 'block';
