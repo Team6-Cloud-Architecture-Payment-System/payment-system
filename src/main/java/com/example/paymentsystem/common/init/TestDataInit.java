@@ -49,60 +49,66 @@ public class TestDataInit implements ApplicationRunner {
         if (productRepository.count() == 0) {
             log.info("테스트 상품 데이터 6개 등록 시작");
 
-//            List<Product> products = List.of(
-//                    new Product(
-//                            1000L,
-//                            "치킨맛 트레이닝 간식",
-//                            200L,
-//                            "훈련에 딱 맞는 한입 사이즈 치킨맛 간식",
-//                            ProductStatus.FOR_SALE,
-//                            "강아지 간식"
-//                    ),
-//                    new Product(
-//                            2500L,
-//                            "연어 덴탈 스틱",
-//                            120L,
-//                            "구강 케어에 도움을 주는 연어 향 덴탈 스틱",
-//                            ProductStatus.FOR_SALE,
-//                            "강아지 간식"
-//                    ),
-//                    new Product(
-//                            1800L,
-//                            "소고기 비스킷",
-//                            150L,
-//                            "소고기 풍미의 바삭한 비스킷",
-//                            ProductStatus.FOR_SALE,
-//                            "강아지 간식"
-//                    ),
-//                    new Product(
-//                            3200L,
-//                            "고구마 크런치 쿠키",
-//                            80L,
-//                            "고구마로 만든 크런치 쿠키(기호성 좋은 간식)",
-//                            ProductStatus.FOR_SALE,
-//                            "강아지 간식"
-//                    ),
-//                    new Product(
-//                            4100L,
-//                            "야채&닭가슴살 리프레시 캔디",
-//                            70L,
-//                            "야채와 닭가슴살 베이스의 상쾌한 리프레시 간식",
-//                            ProductStatus.FOR_SALE,
-//                            "강아지 간식"
-//                    ),
-//                    new Product(
-//                            5000L,
-//                            "오리 저키 프리미엄",
-//                            60L,
-//                            "오리 저키 프리미엄, 쫄깃한 식감의 고급 간식",
-//                            ProductStatus.FOR_SALE,
-//                            "강아지 간식"
-//                    )
-//            );
-//
-//            productRepository.saveAll(products);
-//            log.info("테스트 상품 데이터 6개 등록 완료");
-//        }
+            List<Product> products = List.of(
+                    new Product(
+                            1000L,
+                            "치킨맛 트레이닝 간식",
+                            200L,
+                            "훈련에 딱 맞는 한입 사이즈 치킨맛 간식",
+                            ProductStatus.FOR_SALE,
+                            "강아지 간식",
+                            ""
+                    ),
+                    new Product(
+                            2500L,
+                            "연어 덴탈 스틱",
+                            120L,
+                            "구강 케어에 도움을 주는 연어 향 덴탈 스틱",
+                            ProductStatus.FOR_SALE,
+                            "강아지 간식",
+                            ""
+                    ),
+                    new Product(
+                            1800L,
+                            "소고기 비스킷",
+                            150L,
+                            "소고기 풍미의 바삭한 비스킷",
+                            ProductStatus.FOR_SALE,
+                            "강아지 간식",
+                            ""
+                    ),
+                    new Product(
+                            3200L,
+                            "고구마 크런치 쿠키",
+                            80L,
+                            "고구마로 만든 크런치 쿠키(기호성 좋은 간식)",
+                            ProductStatus.FOR_SALE,
+                            "강아지 간식",
+                            ""
+                    ),
+                    new Product(
+                            4100L,
+                            "야채&닭가슴살 리프레시 캔디",
+                            70L,
+                            "야채와 닭가슴살 베이스의 상쾌한 리프레시 간식",
+                            ProductStatus.FOR_SALE,
+                            "강아지 간식",
+                            ""
+                    ),
+                    new Product(
+                            5000L,
+                            "오리 저키 프리미엄",
+                            60L,
+                            "오리 저키 프리미엄, 쫄깃한 식감의 고급 간식",
+                            ProductStatus.FOR_SALE,
+                            "강아지 간식",
+                            ""
+
+                    )
+            );
+
+            productRepository.saveAll(products);
+            log.info("테스트 상품 데이터 6개 등록 완료");
         }
     }
 }
