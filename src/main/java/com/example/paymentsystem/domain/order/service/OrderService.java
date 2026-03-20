@@ -126,8 +126,8 @@ public class OrderService {
     // 주문 내역 조회
     public OrderHistoryResponse getMyOrders(Long userId, Pageable pageable) {
 
-        // 로그인한 사용자의 주문 목록을 생성일 기준으로 내림차순 조회
-        Page<Order> orderPage = orderRepository.findByUserIdOrderByCreatedAtDesc(userId, pageable);
+        // 로그인한 사용자의 주문 목록을 조회
+        Page<Order> orderPage = orderRepository.findByUserId(userId, pageable);
 
         // 조회한 주문 엔티티 목록을 주문 내역 응답 DTO 목록으로 변환
         List<OrderHistoryResponse.OrderSummary> orders = orderPage.getContent().stream()

@@ -6,7 +6,9 @@ import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
 import com.example.paymentsystem.domain.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,8 +39,13 @@ public class OrderController {
             @AuthenticationPrincipal Long userId,
             @PageableDefault(size = 10) Pageable pageable
     ) {
+        Pageable sortedPageable = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
         return ResponseEntity.ok(
-                ApiResponse.success(orderService.getMyOrders(userId, pageable))
+                ApiResponse.success(orderService.getMyOrders(userId, sortedPageable))
         );
     }
 }
