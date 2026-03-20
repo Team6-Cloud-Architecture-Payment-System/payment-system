@@ -60,7 +60,7 @@ public class PointHistoryService {
         PointHistory spentPoint = new PointHistory(-price, Type.SPENT, user, order);
         pointHistoryRepository.save(spentPoint);
 
-        user.updatePoint(price);
+        user.updatePoint(-price);
     }
 
     // 포인트 복구
