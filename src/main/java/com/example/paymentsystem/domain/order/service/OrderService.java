@@ -147,10 +147,8 @@ public class OrderService {
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
 
-        // 주문 확정
-        order.confirm();
-
-        // TODO: 주문 확정 시 포인트 지급 로직 연결
+        // 공통 주문 확정 처리
+        confirmAndReward(order);
     }
 
     // 5일 뒤면 자동으로 주문 확정
@@ -162,13 +160,17 @@ public class OrderService {
         List<Order> orders = orderRepository.findOrdersReadyForAutoConfirm(targetTime);
 
         for (Order order : orders) {
-            order.confirm();
-            // TODO: 자동 주문 확정 시 포인트 지급 로직 연결
+            // 공통 주문 확정 처리
+            confirmAndReward(order);
         }
     }
 
+    // 주문 확정 + 포인트 지급 공통 처리
+    private void confirmAndReward(Order order) {
+        order.confirm();
+
+        // TODO: 주문 확정 시 포인트 지급 로직 연결
+
+    }
     // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
-
-
-
 }
