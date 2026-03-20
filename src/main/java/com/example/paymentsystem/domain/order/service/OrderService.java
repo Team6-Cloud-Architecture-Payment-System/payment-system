@@ -10,6 +10,7 @@ import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
 import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderItem;
+import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
 import com.example.paymentsystem.domain.product.entity.Product;
 import com.example.paymentsystem.domain.product.entity.ProductStatus;
@@ -17,9 +18,11 @@ import com.example.paymentsystem.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -136,11 +139,38 @@ public class OrderService {
     // 주문 상세 조회
 
 
-    // 상태 변경
-    // 주문 확정을 누르면 주문 확정 됨
-    // 주문 확정을 안해도 5일 뒤면 자동으로 주문 확정이 됨
-    // 주문 확정되면 포인트를 지급함
-    // 환불
+    // 주문 확정 (수동)
+    @Transactional
+    public void confirmOrder(Long userId, Long orderId) {
+
+        // 해당 주문이 존재하는지 + 내 주문이 맞는지 확인
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
+
+        // 주문 확정
+        order.confirm();
+
+        // TODO: 주문 확정 시 포인트 지급 로직 연결
+    }
+    // 5일 뒤면 자동으로 주문 확정
+    @Transactional
+    @Scheduled(cron = "0 0 3 * * *")
+    public void autoConfirmOrders() {
+
+        List<Order> orders = orderRepository.findAllByOrderStatus(OrderStatus.ORDER_COMPLETED);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Order order : orders) {
+            if (order.canAutoConfirm(now)) {
+                order.confirm();
+                // TODO: 자동 주문 확정 시 포인트 지급 로직 연결
+            }
+        }
+    }
+
+
+    // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
 
 
 

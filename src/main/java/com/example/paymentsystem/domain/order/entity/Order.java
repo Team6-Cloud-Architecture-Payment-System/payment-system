@@ -1,12 +1,15 @@
 package com.example.paymentsystem.domain.order.entity;
 
 import com.example.paymentsystem.common.entity.BaseEntity;
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +50,9 @@ public class Order extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
 
+    @Column
+    private LocalDateTime orderCompletedAt;
+
 
     public Order(User user, Long totalPrice, Long usedPoint, Long paymentPrice) {
         this.user = user;
@@ -62,5 +68,35 @@ public class Order extends BaseEntity {
         this.orderItems.add(orderItem);
         orderItem.assignOrder(this);
     }
+
+    // 상태 변경
+    public void updateStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
+
+    // 주문 확정
+    public void confirm() {
+        if (this.orderStatus != OrderStatus.ORDER_COMPLETED) {
+            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.orderStatus = OrderStatus.ORDER_CONFIRMED;
+    }
+
+    // 주문 완료
+    public void complete() {
+        if (this.orderStatus != OrderStatus.PAYMENT_PENDING) {
+            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.orderStatus = OrderStatus.ORDER_COMPLETED;
+        this.orderCompletedAt = LocalDateTime.now();
+    }
+
+    // 주문 자동 확정 대상인지 확인 (주문 완료 후 5일 지났는지)
+    public boolean canAutoConfirm(LocalDateTime now) {
+        return this.orderStatus == OrderStatus.ORDER_COMPLETED
+                && this.orderCompletedAt != null
+                && !this.orderCompletedAt.plusDays(5).isAfter(now);
+    }
+
 
 }
