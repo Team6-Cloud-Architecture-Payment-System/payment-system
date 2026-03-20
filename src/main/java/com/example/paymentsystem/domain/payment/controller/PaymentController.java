@@ -1,7 +1,6 @@
 package com.example.paymentsystem.domain.payment.controller;
 
 import com.example.paymentsystem.common.dto.ApiResponse;
-import com.example.paymentsystem.domain.payment.dto.PaymentConfirmRequest;
 import com.example.paymentsystem.domain.payment.dto.PaymentTryRequest;
 import com.example.paymentsystem.domain.payment.dto.WebhookRequestDto;
 import com.example.paymentsystem.domain.payment.service.PaymentService;
