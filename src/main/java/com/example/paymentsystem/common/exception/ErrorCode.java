@@ -10,8 +10,10 @@ public enum ErrorCode {
 
     // auth
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 가입된 이메일 입니다."),
+    DUPLICATED_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "이미 가입된 전화번호 입니다."),
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
+    UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "접근 권한이 없습니다. 다시 인증을 시도해 주세요."),
     // order
     INSUFFICIENT_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
     PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "주문할 상품을 찾을 수 없습니다."),
