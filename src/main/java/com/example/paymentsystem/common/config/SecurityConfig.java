@@ -48,7 +48,7 @@ public class SecurityConfig {
                                 .requestMatchers(toH2Console()).permitAll()
 
                                 // 템플릿 페이지 렌더링 허용 (html 파일)
-                                .requestMatchers(HttpMethod.GET, "/").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/", "/home").permitAll()
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/pages/**").permitAll()
