@@ -1,6 +1,8 @@
 package com.example.paymentsystem.domain.refund.dto;
 
 public record CreateRefundRequest(
-    Long refundPrice,
-    String refundReason
-){}
+
+        Long refundPrice,
+        String refundReason
+) {
+}

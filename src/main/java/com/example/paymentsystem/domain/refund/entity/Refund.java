@@ -48,4 +48,8 @@ public class Refund {
         this.status = status;
     }
 
+    public void updateRefund(RefundStatus status) {
+        this.status = status;
+    }
+
 }
