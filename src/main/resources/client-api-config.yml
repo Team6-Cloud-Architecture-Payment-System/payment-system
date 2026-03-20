@@ -420,7 +420,7 @@ api:
 
     # ---------- 데모·연동용 (명세 문서에 없음, 기존 정적 페이지 호환) ----------
     get-current-user:
-      url: /api/users/me
+      url: /api/auth/me
       method: GET
       description: "명세 외: 현재 사용자(데모). 실제 경로는 백엔드에 맞게 조정"
       response:
