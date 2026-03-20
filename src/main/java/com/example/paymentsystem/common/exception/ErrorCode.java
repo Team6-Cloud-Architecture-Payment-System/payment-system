@@ -13,7 +13,12 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
     WRONG_PASSWORD(HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     // order
-
+    INSUFFICIENT_POINT(HttpStatus.BAD_REQUEST, "보유 포인트가 부족합니다."),
+    PRODUCT_NOT_FOUND(HttpStatus.NOT_FOUND, "주문할 상품을 찾을 수 없습니다."),
+    PRODUCT_NOT_ON_SALE(HttpStatus.BAD_REQUEST, "판매 중인 상품만 주문할 수 있습니다."),
+    INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "상품의 재고가 부족합니다."),
+    INVALID_USED_POINT(HttpStatus.BAD_REQUEST, "사용 포인트가 올바르지 않습니다."),
+    INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "주문 상품은 최소 1개 이상이어야 합니다."),
     // point
 
     // user

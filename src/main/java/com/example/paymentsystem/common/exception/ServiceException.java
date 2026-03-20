@@ -12,4 +12,9 @@ public class ServiceException extends RuntimeException {
         super(message);
         this.errorCode = errorCode;
     }
+    // 추가한 부분
+    public ServiceException(ErrorCode errorCode) {
+        super(errorCode.getMessage());
+        this.errorCode = errorCode;
+    }
 }

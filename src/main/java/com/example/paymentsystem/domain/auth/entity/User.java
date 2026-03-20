@@ -38,6 +38,9 @@ public class User extends BaseEntity {
 
     private String refreshToken;
 
+    // 임시 추가
+    private Long point;
+
     @Builder
     public User(String name, String email, String password, Long point, Long membership) {
         this.name = name;
