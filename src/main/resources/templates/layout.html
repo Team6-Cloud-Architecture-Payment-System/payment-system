@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${title} + ' - Commerce Demo'">Commerce Demo</title>
 
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Righteous&display=swap" rel="stylesheet">
+
     <!-- Styles -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
 
@@ -22,11 +25,11 @@
     <nav class="navbar">
         <div class="navbar-container">
             <a href="/" class="navbar-brand">
-                <span>🏪 CommerceHub</span>
+                <span class="pop-title" style="margin: 0; font-size: 2rem; -webkit-text-stroke: 1px #000; text-shadow: 3px 3px 0px #000;">6하은칙</span>
             </a>
 
             <ul class="navbar-nav">
-                <li><a href="/" class="nav-link">Home</a></li>
+                <li><a href="/home" class="nav-link">Home</a></li>
                 <li><a href="/pages/shop" class="nav-link">Shop</a></li>
                 <li><a href="/pages/orders" class="nav-link">Orders</a></li>
                 <li><a href="/pages/plans" class="nav-link">Plans</a></li>
