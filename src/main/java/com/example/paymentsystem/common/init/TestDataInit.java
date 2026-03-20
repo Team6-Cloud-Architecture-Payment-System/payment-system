@@ -23,9 +23,10 @@ public class TestDataInit implements ApplicationRunner {
         String name = "임하은";
         String email = "admin@test.com";
         String password = "admin";
+        String phoneNumber = "01011113333";
 
         try {
-            authService.signUp(new SignUpRequest(name, email, password));
+            authService.signUp(new SignUpRequest(name, email, password, phoneNumber));
             log.info("임시 회원 생성 완료: {}", email);
         } catch (ServiceException e) {
             // 이미 가입된 경우 서버 시작이 실패하지 않도록 무시
