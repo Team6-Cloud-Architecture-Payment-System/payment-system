@@ -22,21 +22,23 @@ public class Payment extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
-    private String payments_id;
+    private String paymentsId;
     //Enum 클래스 생성 전 임시 status
-    private PaymentStatus payment_status;
-    private Long payment_price;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentStatus paymentStatus;
+    private Long paymentPrice;
     private LocalDateTime createdAt;
     private LocalDateTime refund_created_at;
 
-    public Payment(Order order, String payments_id, PaymentStatus payment_status, Long payment_price) {
+    public Payment(Order order, String paymentId, PaymentStatus paymentStatus, Long paymentPrice) {
         this.order = order;
-        this.payments_id = payments_id;
-        this.payment_status = payment_status;
-        this.payment_price = payment_price;
+        this.paymentsId = paymentId;
+        this.paymentStatus = paymentStatus;
+        this.paymentPrice = paymentPrice;
     }
 
     public void stateUpdate(PaymentStatus payment_status){
-        this.payment_status = payment_status;
+        this.paymentStatus = payment_status;
     }
 }
