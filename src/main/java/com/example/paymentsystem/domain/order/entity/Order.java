@@ -29,7 +29,7 @@ public class Order extends BaseEntity {
     private User user;
 
     @Column(nullable = false)
-    private UUID orderNumber;
+    private String orderNumber;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
@@ -59,27 +59,23 @@ public class Order extends BaseEntity {
         this.totalPrice = totalPrice;
         this.usedPoint = usedPoint;
         this.paymentPrice = paymentPrice;
-        this.orderNumber = UUID.randomUUID();
+        this.orderNumber = generateOrderNumber();
         this.orderStatus = OrderStatus.PAYMENT_PENDING;
+    }
+
+    // 주문 번호 커스텀
+    private String generateOrderNumber() {
+        return "ORD-" + UUID.randomUUID()
+                .toString()
+                .replace("-", "")
+                .substring(0, 10)
+                .toUpperCase();
     }
 
     // OrderItem 하나를 받아서 현재 Order가 가진 orderItems 리스트에 추가한다
     public void addOrderItem(OrderItem orderItem) {
         this.orderItems.add(orderItem);
         orderItem.assignOrder(this);
-    }
-
-    // 상태 변경
-    public void updateStatus(OrderStatus orderStatus) {
-        this.orderStatus = orderStatus;
-    }
-
-    // 주문 확정
-    public void confirm() {
-        if (this.orderStatus != OrderStatus.ORDER_COMPLETED) {
-            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
-        }
-        this.orderStatus = OrderStatus.ORDER_CONFIRMED;
     }
 
     // 주문 완료
@@ -91,12 +87,18 @@ public class Order extends BaseEntity {
         this.orderCompletedAt = LocalDateTime.now();
     }
 
+    // 주문 확정
+    public void confirm() {
+        if (this.orderStatus != OrderStatus.ORDER_COMPLETED) {
+            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        this.orderStatus = OrderStatus.ORDER_CONFIRMED;
+    }
+
     // 주문 자동 확정 대상인지 확인 (주문 완료 후 5일 지났는지)
     public boolean canAutoConfirm(LocalDateTime now) {
         return this.orderStatus == OrderStatus.ORDER_COMPLETED
                 && this.orderCompletedAt != null
                 && !this.orderCompletedAt.plusDays(5).isAfter(now);
     }
-
-
 }

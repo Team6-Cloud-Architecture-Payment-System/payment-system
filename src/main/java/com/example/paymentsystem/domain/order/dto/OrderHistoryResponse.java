@@ -32,7 +32,7 @@ public record OrderHistoryResponse(
     // 주문 목록에서 개별 주문 1건을 담음
     public record OrderSummary(
             Long orderId,
-            UUID orderNumber,
+            String orderNumber,
             Long totalPrice,
             Long usedPoint,
             Long paymentPrice,
