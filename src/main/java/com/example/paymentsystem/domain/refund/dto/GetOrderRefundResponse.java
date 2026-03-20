@@ -5,7 +5,7 @@ import com.example.paymentsystem.domain.refund.entity.RefundStatus;
 
 import java.time.LocalDateTime;
 
-public record GetRefundResponse (
+public record GetOrderRefundResponse(
     Long id,
     Long orderId,
     Long refundPrice,
@@ -13,7 +13,7 @@ public record GetRefundResponse (
     RefundStatus status,
     LocalDateTime createdAt
 ){
-    public GetRefundResponse(Refund refund) {
+    public GetOrderRefundResponse(Refund refund) {
         this(
                 refund.getId(),
                 refund.getPayment().getOrder().getId(),
