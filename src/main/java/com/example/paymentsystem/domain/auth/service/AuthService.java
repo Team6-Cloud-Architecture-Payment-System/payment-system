@@ -7,6 +7,7 @@ import com.example.paymentsystem.domain.auth.dto.request.LogInRequest;
 import com.example.paymentsystem.domain.auth.dto.request.SignUpRequest;
 import com.example.paymentsystem.domain.auth.dto.response.SignUpResponse;
 import com.example.paymentsystem.domain.auth.dto.response.TokenResponse;
+import com.example.paymentsystem.domain.auth.dto.response.UserInfoResponse;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,11 +30,15 @@ public class AuthService {
         if(userRepository.existsByEmail(request.email())) {
             throw new ServiceException(ErrorCode.DUPLICATED_EMAIL,ErrorCode.DUPLICATED_EMAIL.getMessage());
         }
-
+        //전화번호 중복 검사
+        if (userRepository.existsByPhoneNumber(request.phoneNumber())) {
+            throw new ServiceException(ErrorCode.DUPLICATED_PHONE_NUMBER);
+        }
         User user = User.builder()
                 .name(request.name())
                 .email(request.email())
-                .password(passwordEncoder.encode(request.password())) // 암호화 적용
+                .password(passwordEncoder.encode(request.password()))
+                .phoneNumber(request.phoneNumber())// 암호화 적용
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -51,11 +56,15 @@ public class AuthService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
-        user.updateRefreshToken(refreshToken);
-
-        return new TokenResponse(accessToken, refreshToken, "Bearer");
+        return new TokenResponse(accessToken, "Bearer");
     }
-    //로그아웃 로직
+    //유저 조회로직
+    @Transactional
+    public UserInfoResponse userInfo(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
+
+        return UserInfoResponse.from(user);
+    }
 }

@@ -124,7 +124,7 @@ Authorization: Bearer {token}
       {
         "orderId": 101,
         "orderNumber": "ORD-20260317-0001",
-        "totalAmount": 32000,
+        "totalPrice": 32000,
         "usedPoint": 3000,
         "paymentPrice": 29000,
         "orderStatus": "결제완료",
@@ -133,7 +133,7 @@ Authorization: Bearer {token}
       {
         "orderId": 102,
         "orderNumber": "ORD-20260316-0002",
-        "totalAmount": 15000,
+        "totalPrice": 15000,
         "usedPoint": 0,
         "paymentPrice": 15000,
         "orderStatus": "주문취소",
@@ -203,7 +203,7 @@ Authorization: Bearer {token}
   "data": {
     "orderId": 101,
     "orderNumber": "ORD-20260317-0001",
-    "totalAmount": 32000,
+    "totalPrice": 32000,
     "usedPoint": 3000,
     "paymentPrice": 29000,
     "orderStatus": "결제완료",
@@ -1161,7 +1161,7 @@ Content-Type: application/json
   "status": "SUCCEEDED",
   "id": "can_20260318_abcdef123",
   "pgCancellationId": "PG_TID_987654321",
-  "totalAmount": 11000,
+  "totalPrice": 11000,
   "reason": "고객 단순 변심으로 인한 주문 취소",
   "cancelledAt": "2026-03-18T23:35:00Z",
   "requestedAt": "2026-03-18T23:34:50Z"

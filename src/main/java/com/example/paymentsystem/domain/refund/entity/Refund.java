@@ -48,4 +48,18 @@ public class Refund {
         this.status = status;
     }
 
+    public void updateRefund(RefundStatus status) {
+        this.status = status;
+    }
+
+    // 레코드 생성 정적 팩토리 메서드
+    public static Refund of(Payment payment, String refundReason){
+        return new Refund(
+                payment,
+                payment.getPaymentPrice(),
+                refundReason,
+                RefundStatus.REFUND_COMPLETED
+        );
+    }
+
 }

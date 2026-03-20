@@ -26,20 +26,24 @@ public class OrderItem {
     private String productName;
 
     @Column(nullable = false)
-    private Integer productPrice;
+
+    private Long productPrice;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Long quantity;
 
-    public OrderItem(Order order, Long productId, String productName, Integer productPrice, Integer quantity) {
-        this.order = order;
+    public OrderItem(Long productId, String productName, Long productPrice, Long quantity) {
         this.productId = productId;
         this.productName = productName;
         this.productPrice = productPrice;
         this.quantity = quantity;
     }
-    public int getSubtotalPrice() {
+    public Long getSubtotalPrice() {
         return productPrice * quantity;
+    }
+
+    public void assignOrder(Order order) {
+        this.order = order;
     }
 }
 

@@ -77,7 +77,7 @@ api:
             - name: data
               type: object
               required: true
-              description: "{ orderId, orderNumber, totalAmount, usedPoint, paymentPrice, orderStatus, orderedCreatedAt, payment?, orderItems[] }"
+              description: "{ orderId, orderNumber, totalPrice, usedPoint, paymentPrice, orderStatus, orderedCreatedAt, payment?, orderItems[] }"
             - name: message
               type: string
               required: true

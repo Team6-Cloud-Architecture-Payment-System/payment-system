@@ -31,14 +31,14 @@ public class PaymentService {
         );
 
         //2. 주문 금액이 결제 금액과 동일한지
-
-        if (order.getTotalAmount() != request.payment_price().intValue()) {
+        // 수정함!! 변경 확인 필요
+        if (order.getTotalPrice() != request.payment_price().intValue()) {
             throw new IllegalStateException("주문 금액이 일치하지 않습니다.");
         }
 
         //3. PortOne에 보낼 payments_id 생성
 
-        String generatedPaymentId = paymentIdGenerator.generate(String.valueOf(order.getUserId()));
+        String generatedPaymentId = paymentIdGenerator.generate(String.valueOf(order.getUser().getId()));
 
         //4. 결제 테이블에 저장 (주문 id, payments_id, 결제 상태(대기 기본값), 결제 금액)
 
