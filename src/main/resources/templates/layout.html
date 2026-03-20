@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html th:fragment="layout(title, content)" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title} + ' - Commerce Demo'">Commerce Demo</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <title th:replace="${title}">6하은칙</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Righteous&display=swap" rel="stylesheet">
@@ -15,17 +16,20 @@
     <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 
     <!-- Common Scripts -->
+    <script th:src="@{/js/cookie-util.js}"></script>
     <script th:src="@{/js/app-config.js}"></script>
     <script th:src="@{/js/api-handler.js}"></script>
+    <script th:src="@{/js/api-validator.js}"></script>
     <script th:src="@{/js/theme.js}"></script>
     <script th:src="@{/js/portone-sdk.js}"></script>
+    <script th:src="@{/js/auth-check.js}"></script>
 </head>
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="navbar-container">
             <a href="/" class="navbar-brand">
-                <span class="pop-title" style="margin: 0; font-size: 2rem; -webkit-text-stroke: 1px #000; text-shadow: 3px 3px 0px #000;">6하은칙</span>
+                <span class="pop-title" style="color: #fff; margin: 0; font-size: 2rem; -webkit-text-stroke: 1px #000; text-shadow: 3px 3px 0px #000;">6하은칙</span>
             </a>
 
             <ul class="navbar-nav">
@@ -35,7 +39,6 @@
                 <li><a href="/pages/plans" class="nav-link">Plans</a></li>
                 <li><a href="/pages/subscribe" class="nav-link">Subscribe</a></li>
                 <li><a href="/pages/subscriptions" class="nav-link">Subscriptions</a></li>
-                <li><a href="/config" class="nav-link">Config</a></li>
             </ul>
 
             <div class="navbar-actions">
@@ -57,45 +60,18 @@
         <!-- Right: API Panel -->
         <div class="api-panel">
             <div class="panel-section">
-                <h3 class="panel-title">📡 Current Endpoint</h3>
-                <div id="current-endpoint" class="endpoint-badge">
-                    No request yet
-                </div>
+                <h3 class="panel-title">📡 현재 엔드포인트</h3>
+                <div id="current-endpoint" class="endpoint-badge">아직 요청 없음</div>
             </div>
-
             <div class="panel-section">
-                <h3 class="panel-title">📤 Request</h3>
-                <div class="form-group">
-                    <label class="form-label">Method</label>
-                    <select id="request-method" class="form-select">
-                        <option value="GET">GET</option>
-                        <option value="POST" selected>POST</option>
-                        <option value="PUT">PUT</option>
-                        <option value="DELETE">DELETE</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Custom URL (optional)</label>
-                    <input type="text" id="custom-endpoint" class="form-input" placeholder="http://localhost:8080/api/...">
-                </div>
-                <label class="form-label">Body (JSON)</label>
-                <textarea id="request-body" class="api-textarea" placeholder='{\n  "example": "data"\n}'></textarea>
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="sendCustomRequest()">Send Custom</button>
-                    <button class="btn btn-outline" onclick="clearResponse()">Clear</button>
-                </div>
+                <h3 class="panel-title">📤 요청</h3>
+                <textarea id="request-body" class="api-textarea"></textarea>
             </div>
-
             <div class="panel-section">
-                <h3 class="panel-title">📥 Response</h3>
-                <pre id="response-output" class="response-box">Waiting for request...</pre>
+                <h3 class="panel-title">📥 응답</h3>
+                <pre id="response-output" class="response-box">요청 대기 중...</pre>
             </div>
         </div>
     </div>
-
-    <!-- Page-specific scripts -->
-    <th:block th:if="${pageScript}">
-        <script th:src="@{${pageScript}}"></script>
-    </th:block>
 </body>
 </html>
