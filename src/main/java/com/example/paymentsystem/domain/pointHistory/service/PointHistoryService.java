@@ -30,7 +30,6 @@ public class PointHistoryService {
 //        return new GetMyPointHistoryResponse(user.getId(), user.getPoint());
 //    }
 
-
     // 현재 포인트 잔액 계산 (합산)
     public Long calculatorPoint(User user) {
         Long totalPoint = pointHistoryRepository.sumPointByUser(user);
@@ -46,6 +45,8 @@ public class PointHistoryService {
         PointHistory earnedPoint = new PointHistory(earnPrice, Type.EARNED, user, order);
 
         pointHistoryRepository.save(earnedPoint);
+
+//        user.updatePoint(earnPrice);
     }
 
     // 포인트 사용 (결제 시)
@@ -58,6 +59,8 @@ public class PointHistoryService {
         }
         PointHistory spentPoint = new PointHistory(-price, Type.SPENT, user, order);
         pointHistoryRepository.save(spentPoint);
+
+//        user.updatePoint(spentPoint);
     }
 
     // 포인트 복구
@@ -75,6 +78,8 @@ public class PointHistoryService {
                 order
         );
         pointHistoryRepository.save(restoredPoint);
+
+//        user.updatePoint(restoredPoint);
     }
 
     // 포인트 적립 취소 (환불 시)
@@ -91,6 +96,8 @@ public class PointHistoryService {
                 order
         );
         pointHistoryRepository.save(cancelledPoint);
+
+//        user.updatePoint(cancelledPoint);
     }
 
     // 포인트 소멸
@@ -102,6 +109,9 @@ public class PointHistoryService {
                 user,
                 null
         );
+        pointHistoryRepository.save(expiredPoint);
+
+//        user.updatePoint(-price);
     }
 
     // 포인트 거래 내역 조회
