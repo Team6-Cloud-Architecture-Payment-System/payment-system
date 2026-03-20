@@ -129,22 +129,8 @@ public class OrderService {
         // 로그인한 사용자의 주문 목록을 조회
         Page<Order> orderPage = orderRepository.findByUserId(userId, pageable);
 
-        // 조회한 주문 엔티티 목록을 주문 내역 응답 DTO 목록으로 변환
-        List<OrderHistoryResponse.OrderSummary> orders = orderPage.getContent().stream()
-                .map(OrderHistoryResponse.OrderSummary::new)
-                .toList();
-
-        // 페이지 정보를 pagination DTO로 생성
-        OrderHistoryResponse.Pagination pagination =
-                new OrderHistoryResponse.Pagination(
-                        // 시작 페이지를 0부터가 아니라 1부터 보여줌
-                        orderPage.getNumber() + 1,
-                        orderPage.getSize(),
-                        orderPage.getTotalElements(),
-                        orderPage.getTotalPages()
-                );
-        // 주문 목록과 페이지 정보를 하나의 응답 DTO로 묶어서 반환
-        return new OrderHistoryResponse(orders, pagination);
+        // 조회한 주문 엔티티 페이지를 주문 내역 응답 DTO로 변환
+        return OrderHistoryResponse.from(orderPage);
     }
 
     // 주문 상세 조회
