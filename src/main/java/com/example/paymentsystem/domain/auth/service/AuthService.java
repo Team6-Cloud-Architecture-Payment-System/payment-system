@@ -51,11 +51,8 @@ public class AuthService {
         }
 
         String accessToken = jwtTokenProvider.createAccessToken(user.getId());
-        String refreshToken = jwtTokenProvider.createRefreshToken(user.getId());
 
-        user.updateRefreshToken(refreshToken);
-
-        return new TokenResponse(accessToken, refreshToken, "Bearer");
+        return new TokenResponse(accessToken, "Bearer");
     }
-    //로그아웃 로직
+    //유저 조회로직
 }

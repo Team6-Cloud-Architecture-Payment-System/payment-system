@@ -16,7 +16,6 @@ public class JwtTokenProvider {
 
     private final SecretKey secretKey;
     private final long accessTokenValidity = 1000L * 60 * 15; // 15분
-    private final long refreshTokenValidity = 1000L * 60 * 60 * 24 * 14;
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secret) {
         // String으로 넘어온 secret을 byte 배열로 디코딩 후 SecretKey 객체로 변환
@@ -26,11 +25,6 @@ public class JwtTokenProvider {
     //토큰 생성
     public String createAccessToken(Long id) {
         return createToken(id, accessTokenValidity);
-    }
-
-    // 2. 리프레시 토큰 생성 (등급 정보 없이 ID만 담거나 최소 정보만 담음)
-    public String createRefreshToken(Long id) {
-        return createToken(id, refreshTokenValidity);
     }
 
     public String createToken(Long id, long validity) {
