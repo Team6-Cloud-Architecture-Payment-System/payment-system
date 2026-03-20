@@ -39,9 +39,10 @@ async function openPortOnePayment(paymentData) {
         // 1단계: 서버에 결제 시작 요청 (PENDING 상태로 DB 저장)
         console.log('1단계: 서버에 결제 시작 요청...');
         const createPaymentResult = await makeApiRequest('create-payment', {
+            pathParams: { orderId: paymentData.orderId },
             body: {
-                orderId: paymentData.orderId,
-                totalAmount: paymentData.totalAmount
+                // 백엔드 DTO: PaymentTryRequest.payment_price
+                payment_price: paymentData.backendPaymentPrice ?? paymentData.totalAmount
             }
         });
 
@@ -54,9 +55,47 @@ async function openPortOnePayment(paymentData) {
             throw new Error('결제 시작 요청 실패');
         }
 
-        // 서버에서 생성한 paymentId 사용
-        const serverPaymentId = createPaymentResult.paymentId;
-        console.log('서버에서 생성한 결제 ID:', serverPaymentId);
+        const createPaymentData = createPaymentResult.data ?? {};
+
+        // 서버에서 생성한 paymentsId(PortOne paymentId)를 내려주지 않는 경우가 있어
+        // 여기서는 최대한 호환되게 파생합니다.
+        // - 권장: 백엔드가 PaymentTryResponse에 paymentsId(또는 paymentId)를 포함해 프론트에 내려주게 수정
+        const serverPaymentId =
+            createPaymentData.paymentId ||
+            createPaymentData.paymentsId ||
+            // PaymentTryResponse.id가 PortOne에서 사용하는 paymentId
+            (createPaymentData.id != null ? String(createPaymentData.id) : `payment_${Date.now()}`);
+
+        if (!createPaymentData.paymentId && !createPaymentData.paymentsId) {
+            console.warn(
+                '서버 응답에 PortOne paymentId가 없어 임시 paymentId를 사용합니다. ' +
+                '결제창은 열릴 수 있으나, 웹훅/상태 연동은 백엔드 수정이 필요할 수 있습니다.'
+            );
+        }
+
+        console.log('서버/임시 결제 ID:', serverPaymentId);
+
+        // 고객 정보는 /api/auth/me (get-current-user) 응답을 기준으로 PortOne 포맷에 맞춰 구성
+        // paymentData.customer가 이미 있으면 그걸 우선 사용하되, 비어있으면 보강
+        let customer = paymentData.customer;
+        const hasRequiredCustomerFields =
+            customer &&
+            customer.customerId &&
+            customer.fullName &&
+            customer.phoneNumber &&
+            customer.email;
+
+        if (!hasRequiredCustomerFields) {
+            const currentUser = await makeApiRequest('get-current-user', {});
+            const userData = currentUser?.data ?? currentUser ?? {};
+
+            customer = {
+                customerId: userData.customerUid,
+                fullName: userData.name,
+                phoneNumber: userData.phone || '01012345678',
+                email: userData.email
+            };
+        }
 
         // 2단계: PortOne 결제창 열기
         console.log('2단계: PortOne 결제창 열기...');
@@ -68,12 +107,7 @@ async function openPortOnePayment(paymentData) {
             totalAmount: paymentData.totalAmount,
             currency: paymentData.currency || 'KRW',
             payMethod: paymentData.payMethod || 'CARD',
-            customer: paymentData.customer || {
-                customerId: 'customer_001',
-                fullName: '홍길동',
-                phoneNumber: '01012345678',
-                email: 'customer@example.com'
-            },
+            customer: customer,
             redirectUrl: window.location.href,
             noticeUrls: paymentData.noticeUrls || []
         };
@@ -133,19 +167,17 @@ async function openPortOnePaymentWithPoints(paymentData) {
             throw new Error('kg-inicis 채널키가 설정되지 않았습니다.');
         }
 
-        // 포인트 검증
+        // 포인트 검증 (UI/요청 계산용; 백엔드 DTO에는 pointsToUse가 없으므로 서버에선 제외)
         const pointsToUse = paymentData.pointsToUse || 0;
-        if (pointsToUse < 0) {
-            throw new Error('포인트는 0 이상이어야 합니다.');
-        }
+        if (pointsToUse < 0) throw new Error('포인트는 0 이상이어야 합니다.');
 
-        // 1단계: 서버에 결제 시작 요청 (PENDING 상태로 DB 저장, 포인트 포함)
+        // 1단계: 서버에 결제 시작 요청 (PENDING 상태로 DB 저장)
+        // 백엔드 DTO: PaymentTryRequest.payment_price 만 받음
         console.log('1단계: 서버에 결제 시작 요청 (포인트 포함)...');
         const createPaymentResult = await makeApiRequest('create-payment', {
+            pathParams: { orderId: paymentData.orderId },
             body: {
-                orderId: paymentData.orderId,
-                totalAmount: paymentData.totalAmount,
-                pointsToUse: pointsToUse
+                payment_price: paymentData.backendPaymentPrice ?? paymentData.totalAmount
             }
         });
 
@@ -158,9 +190,44 @@ async function openPortOnePaymentWithPoints(paymentData) {
             throw new Error('결제 시작 요청 실패');
         }
 
-        // 서버에서 생성한 paymentId 사용
-        const serverPaymentId = createPaymentResult.paymentId;
-        console.log('서버에서 생성한 결제 ID:', serverPaymentId);
+        const createPaymentData = createPaymentResult.data ?? {};
+
+        const serverPaymentId =
+            createPaymentData.paymentId ||
+            createPaymentData.paymentsId ||
+            // PaymentTryResponse.id가 PortOne에서 사용하는 paymentId
+            (createPaymentData.id != null ? String(createPaymentData.id) : `payment_${Date.now()}`);
+
+        if (!createPaymentData.paymentId && !createPaymentData.paymentsId) {
+            console.warn(
+                '서버 응답에 PortOne paymentId가 없어 임시 paymentId를 사용합니다. ' +
+                '결제창은 열릴 수 있으나, 웹훅/상태 연동은 백엔드 수정이 필요할 수 있습니다.'
+            );
+        }
+
+        console.log('서버/임시 결제 ID:', serverPaymentId);
+
+        // 고객 정보는 /api/auth/me (get-current-user) 응답을 기준으로 PortOne 포맷에 맞춰 구성
+        // paymentData.customer가 이미 있으면 그걸 우선 사용하되, 비어있으면 보강
+        let customer = paymentData.customer;
+        const hasRequiredCustomerFields =
+            customer &&
+            customer.customerId &&
+            customer.fullName &&
+            customer.phoneNumber &&
+            customer.email;
+
+        if (!hasRequiredCustomerFields) {
+            const currentUser = await makeApiRequest('get-current-user', {});
+            const userData = currentUser?.data ?? currentUser ?? {};
+
+            customer = {
+                customerId: userData.customerUid,
+                fullName: userData.name,
+                phoneNumber: userData.phone || '01012345678',
+                email: userData.email
+            };
+        }
 
         // 포인트 차감 후 최종 금액 계산
         const finalAmount = Math.max(0, paymentData.totalAmount - pointsToUse);
@@ -176,12 +243,7 @@ async function openPortOnePaymentWithPoints(paymentData) {
             totalAmount: finalAmount,  // 포인트 차감 후 금액
             currency: paymentData.currency || 'KRW',
             payMethod: paymentData.payMethod || 'CARD',
-            customer: paymentData.customer || {
-                customerId: 'customer_001',
-                fullName: '홍길동',
-                phoneNumber: '01012345678',
-                email: 'customer@example.com'
-            },
+            customer: customer,
             redirectUrl: window.location.href,
             noticeUrls: paymentData.noticeUrls || []
         };

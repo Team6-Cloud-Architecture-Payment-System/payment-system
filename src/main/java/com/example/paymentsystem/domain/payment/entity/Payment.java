@@ -28,7 +28,6 @@ public class Payment extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
     private Long paymentPrice;
-    private LocalDateTime createdAt;
     private LocalDateTime refund_created_at;
 
     public Payment(Order order, String paymentId, PaymentStatus paymentStatus, Long paymentPrice) {
