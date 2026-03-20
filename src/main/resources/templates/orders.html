@@ -241,7 +241,10 @@
                     throw new Error('API 응답 형식이 올바르지 않습니다.');
                 }
 
-                orders = result;
+                // 백엔드 응답은 ApiResponse wrapper:
+                // { success, data: { orders: [...], pagination: {...} }, message }
+                const extractedOrders = result?.data?.orders;
+                orders = Array.isArray(extractedOrders) ? extractedOrders : [];
                 loadingEl.style.display = 'none';
 
                 if (orders.length === 0) {
@@ -266,12 +269,13 @@
                 tr.style.borderBottom = '1px solid var(--border)';
 
                 // 상태에 따른 스타일
-                const statusStyle = getStatusStyle(order.status);
+                const statusStyle = getStatusStyle(order.orderStatus);
 
                 // 포인트 정보 구성
-                const usedPoints = order.usedPoints || 0;
-                const earnedPoints = order.earnedPoints || 0;
-                const finalAmount = order.finalAmount || order.totalAmount;
+                const usedPoints = Number(order.usedPoint ?? 0);
+                const earnedPoints = Number(order.earnedPoints ?? 0); // 응답에 없으면 0
+                const totalPrice = Number(order.totalPrice ?? 0);
+                const finalAmount = Number(order.paymentPrice ?? order.totalPrice ?? 0);
 
                 let pointsDisplay = '';
                 if (usedPoints > 0 || earnedPoints > 0) {
@@ -291,7 +295,7 @@
                     <td style="padding: 0.75rem; font-weight: 600;">${order.orderNumber}</td>
                     <td style="padding: 0.75rem; font-family: monospace; font-size: 0.875rem; color: var(--text-secondary);">${order.orderId}</td>
                     <td style="padding: 0.75rem;">
-                        <div style="font-weight: 600;">${order.totalAmount.toLocaleString()}원</div>
+                        <div style="font-weight: 600;">${totalPrice.toLocaleString()}원</div>
                         ${usedPoints > 0 ? `<div style="font-size: 0.75rem; color: var(--text-secondary);">실결제: ${finalAmount.toLocaleString()}원</div>` : ''}
                     </td>
                     <td style="padding: 0.75rem;">
@@ -299,11 +303,11 @@
                     </td>
                     <td style="padding: 0.75rem;">
                         <span style="display: inline-block; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.875rem; font-weight: 500; ${statusStyle}">
-                            ${getStatusText(order.status)}
+                            ${getStatusText(order.orderStatus)}
                         </span>
                     </td>
                     <td style="padding: 0.75rem; text-align: center;">
-                        ${order.status === 'PENDING' ?
+                        ${order.orderStatus === '결제 대기' ?
                             `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.875rem;" onclick="payOrder('${order.orderId}', ${finalAmount})">
                                 💳 결제하기
                             </button>` :
@@ -324,7 +328,7 @@
             }
 
             // 해당 주문 찾기
-            const order = orders.find(o => o.orderId === orderId);
+            const order = orders.find(o => String(o.orderId) === String(orderId));
             if (!order) {
                 showNotification('⚠️ 주문을 찾을 수 없습니다', 'error');
                 return;
@@ -406,7 +410,13 @@
                 'PAID': 'background: #D1FAE5; color: #065F46;',
                 'CANCELLED': 'background: #FEE2E2; color: #991B1B;',
                 'SHIPPED': 'background: #DBEAFE; color: #1E40AF;',
-                'DELIVERED': 'background: #E0E7FF; color: #3730A3;'
+                'DELIVERED': 'background: #E0E7FF; color: #3730A3;',
+
+                // 백엔드 응답(statusName)은 한글 문자열
+                '결제 대기': 'background: #FEF3C7; color: #92400E;',
+                '주문 완료': 'background: #D1FAE5; color: #065F46;',
+                '주문 확정': 'background: #DBEAFE; color: #1E40AF;',
+                '환불 완료': 'background: #FEE2E2; color: #991B1B;'
             };
             return styles[status] || 'background: #F3F4F6; color: #374151;';
         }
@@ -418,7 +428,12 @@
                 'PAID': '결제 완료',
                 'CANCELLED': '취소됨',
                 'SHIPPED': '배송중',
-                'DELIVERED': '배송 완료'
+                'DELIVERED': '배송 완료',
+
+                '결제 대기': '결제 대기',
+                '주문 완료': '주문 완료',
+                '주문 확정': '주문 확정',
+                '환불 완료': '환불 완료'
             };
             return texts[status] || status;
         }
