@@ -1,18 +1,11 @@
 package com.example.paymentsystem.domain.payment.service;
 
 import com.example.paymentsystem.domain.payment.dto.PortOnePaymentResponse;
-import com.example.paymentsystem.domain.payment.dto.PortOneTokenResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -20,44 +13,33 @@ public class PortOneApiService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Value("${portone.api.key}")
-    private String apiKey;
-
     @Value("${portone.api.secret}")
     private String apiSecret;
 
-    // 1. 포트원 액세스 토큰 발급
-    public String getAccessToken() {
-        String url = "https://api.iamport.kr/users/getToken";
+    private static final String API_URL = "https://api.portone.io/payments/";
 
-        Map<String, String> body = new HashMap<>();
-        body.put("imp_key", apiKey);
-        body.put("imp_secret", apiSecret);
-
-        PortOneTokenResponse response = restTemplate.postForObject(url, body, PortOneTokenResponse.class);
-
-        if (response == null || response.response() == null) {
-            throw new RuntimeException("포트원 토큰 발급에 실패했습니다.");
-        }
-
-        return response.response().access_token();
-    }
-
-    public PortOnePaymentResponse.PaymentDetail getPaymentData(String impUid, String accessToken) {
-        String url = "https://api.iamport.kr/payments/" + impUid;
-
+    /**
+     * 포트원 결제 단건 조회 (최신 API 방식)
+     */
+    public PortOnePaymentResponse getPaymentData(String paymentId) {
         HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
+        // 인증 방식: "PortOne " 접두어와 Secret Key 조합
+        headers.set("Authorization", "PortOne " + apiSecret);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-        ResponseEntity<PortOnePaymentResponse> response = restTemplate.exchange(
-                url, HttpMethod.GET, entity, PortOnePaymentResponse.class
-        );
+        try {
+            ResponseEntity<PortOnePaymentResponse> response = restTemplate.exchange(
+                    API_URL + paymentId,
+                    HttpMethod.GET,
+                    entity,
+                    PortOnePaymentResponse.class
+            );
 
-        if (response.getBody() == null || response.getBody().response() == null) {
-            throw new RuntimeException("결제 정보 조회에 실패했습니다.");
+            return response.getBody();
+        } catch (Exception e) {
+            throw new RuntimeException("포트원 결제 정보 조회 실패: " + e.getMessage());
         }
-
-        return response.getBody().response();
     }
 }

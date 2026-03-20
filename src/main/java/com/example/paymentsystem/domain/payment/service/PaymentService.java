@@ -36,7 +36,7 @@ public class PaymentService {
         );
 
         //2. 주문 금액이 결제 금액과 동일한지
-        if (order.getTotalPrice().equals(request.payment_price())) {
+        if (order.getTotalPrice().equals(request.paymentPrice())) {
             throw new IllegalStateException("주문 금액이 일치하지 않습니다.");
         }
 
@@ -44,7 +44,7 @@ public class PaymentService {
             throw new IllegalStateException("결제할 수 없는 주문 상태입니다.");
         }
 
-        if (paymentRepository.existsByOrderAndStatus(order, PaymentStatus.WAIT)) {
+        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.WAIT)) {
             throw new IllegalStateException("이미 결제 진행 중인 주문입니다.");
         }
 
@@ -58,39 +58,37 @@ public class PaymentService {
                 order,
                 generatedPaymentId,
                 PaymentStatus.WAIT,
-                request.payment_price())));
+                request.paymentPrice())));
     }
 
     @Transactional
-    public String confirmPayment(PaymentConfirmRequest request) {
-        // 1. 포트원 액세스 토큰 발급
-        String accessToken = portOneApiService.getAccessToken();
+    public void confirmPayment(String paymentId) {
+        // 1. 포트원 서버에서 실제 결제 내역 조회
+        PortOnePaymentResponse portOneData = portOneApiService.getPaymentData(paymentId);
 
-        // 2. 포트원 서버에서 실제 결제 내역 조회
-        PortOnePaymentResponse.PaymentDetail portOneData =
-                portOneApiService.getPaymentData(request.imp_uid(), accessToken);
-
-        // 3. DB에서 결제 시도 정보 조회
-        Payment payment = paymentRepository.findByPaymentsId(request.paymentsId())
+        // 2. 우리 DB에서 결제 시도 정보 조회
+        Payment payment = paymentRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new IllegalArgumentException("결제 내역을 찾을 수 없습니다."));
 
-        // 4. 이미 처리된 결제인지 확인
+        // 3. 중복 처리 방지 (이미 완료된 경우 종료)
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            return accessToken;
+            return;
         }
 
-        // 5. 금액 검증: DB의 요청 금액과 실제 결제된 금액이 일치하는지 확인
-        if (!portOneData.amount().equals(payment.getPaymentPrice())) {
-            handleSecurityIssue(request.imp_uid(), accessToken);
+        // 4. 결제 상태 확인 (PAID 인지 확인)
+        if (!"PAID".equals(portOneData.status())) {
+            throw new IllegalStateException("결제가 완료되지 않은 상태입니다. 상태: " + portOneData.status());
+        }
+
+        // 5. 금액 검증 (DB 저장 금액 vs 포트원 실제 결제 금액)
+        if (!portOneData.amount().total().equals(payment.getPaymentPrice())) {
+            // 위변조 시 즉시 예외 발생 (필요 시 자동 환불 로직 추가)
             throw new IllegalStateException("결제 금액 위변조가 감지되었습니다.");
         }
 
-        // 6. 결제 확정 처리
+        // 6. 상태 업데이트 및 비즈니스 로직 수행
         payment.stateUpdate(PaymentStatus.PAID);
-
-        // 7. 후속 비즈니스 로직 (재고 차감, 포인트 적립 등)
-//        orderService.(payment.getOrder());
-        return accessToken;
+//        orderService.completeOrder(payment.getOrder());
     }
 
     private void handleSecurityIssue(String impUid, String token) {
