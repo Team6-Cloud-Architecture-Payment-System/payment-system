@@ -10,7 +10,8 @@ public record ProductDetailResponse (
     Long stock,
     String detail,
     ProductStatus status,
-    String category
+    String category,
+    String imgUrl
 ) {
     public static ProductDetailResponse from(Product product){
         return new ProductDetailResponse(
@@ -20,7 +21,8 @@ public record ProductDetailResponse (
                 product.getStock(),
                 product.getDetail(),
                 product.getStatus(),
-                product.getCategory()
+                product.getCategory(),
+                product.getImgUrl()
         );
     }
 }
