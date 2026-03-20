@@ -10,6 +10,6 @@ public record UserInfoResponse(
         Long point
 ) {
     public static UserInfoResponse from (User user) {
-        return new UserInfoResponse(user.getId(), user.getEmail(), user.getName(), user.getPhoneNumber(), user.getPoint());
+        return new UserInfoResponse(user.getId(), user.getName(),  user.getEmail(), user.getPhoneNumber(), user.getPoint());
     }
 }
