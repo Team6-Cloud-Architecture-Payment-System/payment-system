@@ -46,7 +46,7 @@ public class PointHistoryService {
 
         pointHistoryRepository.save(earnedPoint);
 
-//        user.updatePoint(earnPrice);
+        user.updatePoint(earnPrice);
     }
 
     // 포인트 사용 (결제 시)
@@ -60,7 +60,7 @@ public class PointHistoryService {
         PointHistory spentPoint = new PointHistory(-price, Type.SPENT, user, order);
         pointHistoryRepository.save(spentPoint);
 
-//        user.updatePoint(spentPoint);
+        user.updatePoint(price);
     }
 
     // 포인트 복구
@@ -79,7 +79,7 @@ public class PointHistoryService {
         );
         pointHistoryRepository.save(restoredPoint);
 
-//        user.updatePoint(restoredPoint);
+        user.updatePoint(price);
     }
 
     // 포인트 적립 취소 (환불 시)
@@ -97,7 +97,7 @@ public class PointHistoryService {
         );
         pointHistoryRepository.save(cancelledPoint);
 
-//        user.updatePoint(cancelledPoint);
+        user.updatePoint(-earnedPoint.getPoint());
     }
 
     // 포인트 소멸
@@ -111,7 +111,7 @@ public class PointHistoryService {
         );
         pointHistoryRepository.save(expiredPoint);
 
-//        user.updatePoint(-price);
+        user.updatePoint(-price);
     }
 
     // 포인트 거래 내역 조회
