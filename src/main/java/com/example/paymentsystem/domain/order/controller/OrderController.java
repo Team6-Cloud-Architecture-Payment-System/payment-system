@@ -1,4 +1,5 @@
 package com.example.paymentsystem.domain.order.controller;
+import com.example.paymentsystem.common.dto.ApiResponse;
 import com.example.paymentsystem.domain.order.dto.CreateOrderRequest;
 import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
 import com.example.paymentsystem.domain.order.service.OrderService;
@@ -20,12 +21,11 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<CreateOrderResponse> create(
-            Authentication authentication,
+    public ResponseEntity<ApiResponse<CreateOrderResponse>> create(
+            @AuthenticationPrincipal Long userId,
             @Valid @RequestBody CreateOrderRequest request
     ) {
-        Long userId = (Long) authentication.getPrincipal();
-        CreateOrderResponse response = orderService.create(userId, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(orderService.create(userId, request)));
     }
 }
