@@ -7,6 +7,7 @@ import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.order.dto.CreateOrderItemRequest;
 import com.example.paymentsystem.domain.order.dto.CreateOrderRequest;
 import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
+import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderItem;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
@@ -14,6 +15,8 @@ import com.example.paymentsystem.domain.product.entity.Product;
 import com.example.paymentsystem.domain.product.entity.ProductStatus;
 import com.example.paymentsystem.domain.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,20 +121,27 @@ public class OrderService {
         // 주문 생성 응답 반환
         return new CreateOrderResponse(savedOrder);
     }
+
+
+    // 주문 내역 조회
+    public OrderHistoryResponse getMyOrders(Long userId, Pageable pageable) {
+
+        // 로그인한 사용자의 주문 목록을 조회
+        Page<Order> orderPage = orderRepository.findByUserId(userId, pageable);
+
+        // 조회한 주문 엔티티 페이지를 주문 내역 응답 DTO로 변환
+        return OrderHistoryResponse.from(orderPage);
+    }
+
+    // 주문 상세 조회
+
+
+    // 상태 변경
+    // 주문 확정을 누르면 주문 확정 됨
+    // 주문 확정을 안해도 5일 뒤면 자동으로 주문 확정이 됨
+    // 주문 확정되면 포인트를 지급함
+    // 환불
+
+
+
 }
-
-// 주문 내역 조회
-
-// 주문 상세 조회
-
-
-// 상태 변경
-
-// 주문 확정을 누르면 주문 확정 됨
-
-// 주문 확정을 안해도 5일 뒤면 자동으로 주문 확정이 됨
-// 주문 확정되면 포인트를 지급함
-
-// 환불
-
-
