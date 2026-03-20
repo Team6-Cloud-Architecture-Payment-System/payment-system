@@ -1,6 +1,8 @@
 package com.example.paymentsystem.domain.auth.entity;
 
 import com.example.paymentsystem.common.entity.BaseEntity;
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
@@ -54,4 +56,12 @@ public class User extends BaseEntity {
         this.role = (role != null) ? role : UserRole.USER;
         this.point = 0L;
     }
+
+    public void updatePoint(Long amount) {
+        if (this.point + amount < 0) {
+            throw new ServiceException(ErrorCode.INSUFFICIENT_POINT);
+        }
+        this.point += amount;
+    }
+
 }
