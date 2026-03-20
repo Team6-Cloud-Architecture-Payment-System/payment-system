@@ -2,16 +2,21 @@ package com.example.paymentsystem.domain.auth.controller;
 
 import com.example.paymentsystem.common.config.JwtTokenProvider;
 import com.example.paymentsystem.common.dto.ApiResponse;
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.dto.request.LogInRequest;
 import com.example.paymentsystem.domain.auth.dto.request.SignUpRequest;
 import com.example.paymentsystem.domain.auth.dto.response.LogOutResponse;
 import com.example.paymentsystem.domain.auth.dto.response.SignUpResponse;
 import com.example.paymentsystem.domain.auth.dto.response.TokenResponse;
+import com.example.paymentsystem.domain.auth.dto.response.UserInfoResponse;
+import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -50,5 +55,18 @@ public class AuthController {
             response = new LogOutResponse(false, "로그아웃 실패");
         }
         return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<ApiResponse<UserInfoResponse>> getUserInfo(@AuthenticationPrincipal Long userId) {
+        if (userId == null) {
+            throw new ServiceException(ErrorCode.UNAUTHORIZED);
+        }
+
+        // 2. 서비스 레이어 호출 (ID를 넘겨서 DB 조회 및 DTO 변환)
+        UserInfoResponse response = authService.userInfo(userId);
+
+        return ResponseEntity.ok(ApiResponse.success(response));
+
     }
 }
