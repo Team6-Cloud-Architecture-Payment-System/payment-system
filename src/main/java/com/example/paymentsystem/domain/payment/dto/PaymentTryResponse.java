@@ -14,8 +14,8 @@ public record PaymentTryResponse(
         this(
                 payment.getId(),
                 payment.getOrder().getId(),
-                payment.getPayment_status(),
-                payment.getPayment_price()
+                payment.getPaymentStatus(),
+                payment.getPaymentPrice()
         );
     }
 }

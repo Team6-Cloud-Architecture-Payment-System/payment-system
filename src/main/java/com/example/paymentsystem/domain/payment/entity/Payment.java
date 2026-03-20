@@ -24,6 +24,8 @@ public class Payment extends BaseEntity {
     private Order order;
     private String paymentsId;
     //Enum 클래스 생성 전 임시 status
+
+    @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;
     private Long paymentPrice;
     private LocalDateTime createdAt;
