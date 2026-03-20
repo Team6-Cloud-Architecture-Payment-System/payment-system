@@ -37,7 +37,7 @@ public class RefundService {
                 () -> new EntityNotFoundException("결제 건이 존재하지 않습니다.")
         );
         // JWT토큰에서 userId 꺼내서 소유권 검증
-        if (!payment.getOrder().getId().equals(userId)) {
+        if (!payment.getOrder().getUser().getId().equals(userId)) {
             throw new IllegalStateException("해당 결제건에 대한 권한이 없습니다.");
         }
 
@@ -58,13 +58,8 @@ public class RefundService {
         //TODO PortOne 취소 API 호출
 
 
-        // Refund 레코드 생성
-        Refund refund = new Refund(
-                payment,
-                payment.getPaymentPrice(),
-                request.refundReason(),
-                RefundStatus.REFUND_COMPLETED
-        );
+        // 환불 레코드 엔티티 내부로 캡슐화
+        Refund refund = Refund.of(payment, request.refundReason());
 
         Refund savedRefund = refundRepository.save(refund);
 
@@ -78,7 +73,7 @@ public class RefundService {
 //        payment.getOrder().updateStatus(OrderStatus.REFUNDED);
 
         // 포인트 복구 처리
-        if (payment.getOrder().getUser().getPoint() > 0) {
+        if (payment.getOrder().getUsedPoint() > 0) {
             pointHistoryService.restorePoint(user, payment.getOrder(), payment.getOrder().getUser().getPoint());
         }
 
