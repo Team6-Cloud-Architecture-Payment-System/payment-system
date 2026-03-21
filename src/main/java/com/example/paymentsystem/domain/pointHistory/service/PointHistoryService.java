@@ -1,5 +1,7 @@
 package com.example.paymentsystem.domain.pointHistory.service;
 
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.order.entity.Order;
@@ -31,7 +33,7 @@ public class PointHistoryService {
 //    }
 
     // 현재 포인트 잔액 계산 (합산)
-    public Long calculatorPoint(User user) {
+    public Long calculatePoint(User user) {
         Long totalPoint = pointHistoryRepository.sumPointByUser(user);
         return totalPoint == null ? 0L : totalPoint;
     }
@@ -53,9 +55,9 @@ public class PointHistoryService {
     @Transactional
     public void usePoint(User user, Order order, Long price) {
         // 잔액이 부족한지 체크
-        Long currentPrice = calculatorPoint(user);
+        Long currentPrice = calculatePoint(user);
         if (currentPrice < price) {
-            throw new IllegalStateException("포인트 잔액이 부족합니다.");
+            throw new ServiceException(ErrorCode.INSUFFICIENT_POINT);
         }
         PointHistory spentPoint = new PointHistory(-price, Type.SPENT, user, order);
         pointHistoryRepository.save(spentPoint);
@@ -66,9 +68,9 @@ public class PointHistoryService {
     // 포인트 복구
     @Transactional
     public void restorePoint(User user, Order order, Long price) {
-        // 1. 해당 주문이 SPENT 상태인지, 거래 내역 확인
+        // 1. 포인트 거래 내역 확인
         pointHistoryRepository.findByOrderAndType(order, Type.SPENT).orElseThrow(
-                () -> new IllegalStateException("사용한 포인트 내역이 없습니다.")
+                () -> new ServiceException(ErrorCode.POINT_HISTORY_NOT_FOUND)
         );
         // 2. RESTORED 거래 내역 생성
         PointHistory restoredPoint = new PointHistory(
@@ -87,7 +89,7 @@ public class PointHistoryService {
     public void cancelPoint(User user, Order order) {
         // 거래 내역 확인
         PointHistory earnedPoint = pointHistoryRepository.findByOrderAndType(order, Type.EARNED).orElseThrow(
-                () -> new IllegalStateException("적립된 포인트 내역이 없습니다.")
+                () -> new ServiceException(ErrorCode.EARNED_POINT_NOT_FOUND)
         );
         PointHistory cancelledPoint = new PointHistory(
                 -earnedPoint.getPoint(),
@@ -115,9 +117,10 @@ public class PointHistoryService {
     }
 
     // 포인트 거래 내역 조회
+    @Transactional(readOnly = true)
     public Page<GetPointTransactionHistory> getPointTransactionHistory(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("유저가 존재하지 않습니다.")
+                () -> new ServiceException(ErrorCode.USER_NOT_FOUND)
         );
         return pointHistoryRepository.findAllByUser(user, pageable);
 
