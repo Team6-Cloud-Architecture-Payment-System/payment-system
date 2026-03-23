@@ -78,6 +78,11 @@ public class Order extends BaseEntity {
         orderItem.assignOrder(this);
     }
 
+    // 주문 상태 변경
+    public void updateStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
+git
     // 주문 완료
     public void complete() {
         if (this.orderStatus != OrderStatus.PAYMENT_PENDING) {
