@@ -4,6 +4,10 @@ import com.example.paymentsystem.common.exception.ErrorCode;
 import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
+import com.example.paymentsystem.domain.membership.entity.MembershipTier;
+import com.example.paymentsystem.domain.membership.entity.UserMembership;
+import com.example.paymentsystem.domain.membership.repository.MembershipTierRepository;
+import com.example.paymentsystem.domain.membership.repository.UserMembershipRepository;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
@@ -27,8 +31,11 @@ public class PointHistoryService {
     private final PointHistoryRepository pointHistoryRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final UserMembershipRepository userMembershipRepository;
+    private final MembershipTierRepository membershipTierRepository;
     private final PaymentRepository paymentRepository;
 
+    private static final Long MIN_USE_POINT = 1000L; // 예: 1000원부터 사용 가능
 //    @Transactional(readOnly = true)
 //    public GetMyPointHistoryResponse getMyPoint(Long userId) {
 //        User user = userRepository.findById(userId).orElseThrow(
@@ -46,23 +53,23 @@ public class PointHistoryService {
 
     // 포인트 적립 (결제 성공 시)
     @Transactional
-    public void earnPoint(User user, Order order, Long paymentPrice, Double rewardRate) {
+    public void earnPoint(User user, Order order) {
         // 이미 적립된 내역이 있는지 확인
         if (pointHistoryRepository.existsByOrderAndType(order, Type.EARNED)) {
             return; // 이미 적립되어있으면 그냥 리턴
         }
         // 결제 상태 확인
-        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PAID)) {
-            throw new ServiceException(ErrorCode.INVALID_PAYMENT_STATUS);
-        }
-
-        // 주문 확정 상태에서만 적립 가능하게 검증 로직 추가
-        if (order.getOrderStatus() != OrderStatus.ORDER_CONFIRMED) {
+        // 2. 상태 검증 (결제 완료 + 주문 확정 상태여야 함)
+        // 기존 코드의 논리 오류 수정 (PAID 상태 '여야' 함)
+        boolean isPaid = paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PAID);
+        if (!isPaid || order.getOrderStatus() != OrderStatus.ORDER_CONFIRMED) {
             throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
         }
-
+        // 현재 등급에 해당되는 등급 정책 조회
+        Double rewardRate = membershipTierRepository.findRewardRateByUserId(user.getId())
+                .orElseThrow(() -> new ServiceException(ErrorCode.MEMBERSHIP_NOT_FOUND));
         // rewardRate는 Double 타입이므로, long타입으로 형변환 후 받아줌
-        Long earnPrice = (long) Math.floor(paymentPrice * rewardRate);
+        Long earnPrice = (long) Math.floor(order.getTotalPrice() * rewardRate);
 
         PointHistory earnedPoint = new PointHistory(earnPrice, Type.EARNED, user, order);
 
@@ -74,9 +81,13 @@ public class PointHistoryService {
     // 포인트 사용 (결제 시)
     @Transactional
     public void usePoint(User user, Order order, Long price) {
-        // TODO 최소 포인트를 정해서 검증 로직 추가
+        if (price < MIN_USE_POINT) {
+            throw new ServiceException(ErrorCode.POINT_BELOW_MINIMUM);
+        }
 
-
+        // 비관적 락을 통해 유저 정보 재조회 (동시성 방지)
+        User lockedUser = userRepository.findByIdWithPessimisticLock(user.getId())
+                .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
         // 잔액이 부족한지 체크
         if (user.getPoint() < price) {
             throw new ServiceException(ErrorCode.INSUFFICIENT_POINT);
@@ -118,6 +129,9 @@ public class PointHistoryService {
     // 포인트 적립 취소 (환불 시)
     @Transactional
     public void cancelPoint(User user, Order order) {
+        if (pointHistoryRepository.existsByOrderAndType(order, Type.CANCELLED)) {
+            return; // 이미 취소됨
+        }
         // 거래 내역 확인
         PointHistory earnedPoint = pointHistoryRepository.findByOrderAndType(order, Type.EARNED).orElseThrow(
                 () -> new ServiceException(ErrorCode.EARNED_POINT_NOT_FOUND)

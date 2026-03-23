@@ -45,8 +45,9 @@ public enum ErrorCode {
 
     // membership
 
-    MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버십 정보가 없습니다.");
-
+    MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버십 정보가 없습니다."),
+    // pointhistory
+    POINT_BELOW_MINIMUM(HttpStatus.BAD_REQUEST, "포인트 최소 사용금액은 1000원입니다.");
 
     private final HttpStatus status;
     private final String message;

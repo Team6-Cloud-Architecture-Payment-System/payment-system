@@ -6,9 +6,12 @@ import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.membership.dto.GetMembershipTierResponse;
 import com.example.paymentsystem.domain.membership.dto.GetMyMembershipResponse;
+import com.example.paymentsystem.domain.membership.entity.MembershipTier;
 import com.example.paymentsystem.domain.membership.entity.UserMembership;
 import com.example.paymentsystem.domain.membership.repository.MembershipTierRepository;
 import com.example.paymentsystem.domain.membership.repository.UserMembershipRepository;
+import com.example.paymentsystem.domain.order.entity.OrderStatus;
+import com.example.paymentsystem.domain.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +26,7 @@ public class MembershipService {
     private final MembershipTierRepository membershipTierRepository;
     private final UserRepository userRepository;
     private final UserMembershipRepository userMembershipRepository;
+    private final OrderRepository orderRepository;
 
     // 멤버십 등급 정책 조회 (MembershipTier)
     public List<GetMembershipTierResponse> getMembershipTier() {
@@ -47,12 +51,15 @@ public class MembershipService {
 
     // 등급 갱신
     @Transactional
-    public void updateMembership(User user, Long totalPaidPrice) {
+    public void updateMembership(Long userId, Long totalPaidPrice) {
         // 1. 유저의 멤버십 조회
-        UserMembership userMembership = userMembershipRepository.findByUserId(user.getId()).orElseThrow(
+        UserMembership userMembership = userMembershipRepository.findByUserId(userId).orElseThrow(
                 () -> new ServiceException(ErrorCode.MEMBERSHIP_NOT_FOUND)
         );
-        // 엔티티로 등급 계산 넘김
-        userMembership.updateTotalPriceAndGrade(totalPaidPrice);
+        // 2. 해당 유저의 모든 '주문 완료' 주문 금액 합계를 DB에서 직접 조회
+        List<MembershipTier> allTiers = membershipTierRepository.findAll();
+
+        // 반영
+        userMembership.updateTotalPriceAndGrade(totalPaidPrice, allTiers);
     }
 }
