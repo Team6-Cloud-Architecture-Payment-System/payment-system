@@ -41,6 +41,7 @@ public enum ErrorCode {
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 결제 정보를 찾을 수 없습니다."),
     INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "결제 완료 상태인 경우에만 환불이 가능합니다."),
     REFUND_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문의 환불 내역이 없습니다."),
+    ALREADY_RESTORED(HttpStatus.BAD_REQUEST, "이미 복구된 내역이 존재합니다."),
 
     // membership
 

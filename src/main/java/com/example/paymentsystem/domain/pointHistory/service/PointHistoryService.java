@@ -7,6 +7,9 @@ import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
+import com.example.paymentsystem.domain.payment.entity.Payment;
+import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
+import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import com.example.paymentsystem.domain.pointHistory.dto.GetPointTransactionHistory;
 import com.example.paymentsystem.domain.pointHistory.entity.PointHistory;
 import com.example.paymentsystem.domain.pointHistory.entity.Type;
@@ -24,6 +27,7 @@ public class PointHistoryService {
     private final PointHistoryRepository pointHistoryRepository;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
+    private final PaymentRepository paymentRepository;
 
 //    @Transactional(readOnly = true)
 //    public GetMyPointHistoryResponse getMyPoint(Long userId) {
@@ -33,23 +37,32 @@ public class PointHistoryService {
 //        return new GetMyPointHistoryResponse(user.getId(), user.getPoint());
 //    }
 
-    // 현재 포인트 잔액 계산 (합산)
+    /*현재 포인트 잔액 계산(합산)
+
     public Long calculatorPoint(User user) {
         Long totalPoint = pointHistoryRepository.sumPointByUser(user);
         return totalPoint == null ? 0L : totalPoint;
-    }
+    }*/
 
     // 포인트 적립 (결제 성공 시)
     @Transactional
     public void earnPoint(User user, Order order, Long paymentPrice, Double rewardRate) {
+        // 이미 적립된 내역이 있는지 확인
+        if (pointHistoryRepository.existsByOrderAndType(order, Type.EARNED)) {
+            return; // 이미 적립되어있으면 그냥 리턴
+        }
+        // 결제 상태 확인
+        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PAID)) {
+            throw new ServiceException(ErrorCode.INVALID_PAYMENT_STATUS);
+        }
 
         // 주문 확정 상태에서만 적립 가능하게 검증 로직 추가
-        if (order.getOrderStatus() != OrderStatus.ORDER_CONFIRMED){
+        if (order.getOrderStatus() != OrderStatus.ORDER_CONFIRMED) {
             throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
         }
 
         // rewardRate는 Double 타입이므로, long타입으로 형변환 후 받아줌
-        Long earnPrice = (long) (paymentPrice * rewardRate);
+        Long earnPrice = (long) Math.floor(paymentPrice * rewardRate);
 
         PointHistory earnedPoint = new PointHistory(earnPrice, Type.EARNED, user, order);
 
@@ -65,10 +78,10 @@ public class PointHistoryService {
 
 
         // 잔액이 부족한지 체크
-        Long currentPrice = calculatorPoint(user);
-        if (currentPrice < price) {
+        if (user.getPoint() < price) {
             throw new ServiceException(ErrorCode.INSUFFICIENT_POINT);
         }
+
         PointHistory spentPoint = new PointHistory(-price, Type.SPENT, user, order);
         pointHistoryRepository.save(spentPoint);
 
@@ -77,21 +90,29 @@ public class PointHistoryService {
 
     // 포인트 복구
     @Transactional
-    public void restorePoint(User user, Order order, Long price) {
-        // 1. 해당 주문이 SPENT 상태인지, 거래 내역 확인
-        pointHistoryRepository.findByOrderAndType(order, Type.SPENT).orElseThrow(
+    public void restorePoint(User user, Order order) {
+        // 1. 복구된 내역이 이미 존재하는지 확인
+        if (pointHistoryRepository.existsByOrderAndType(order, Type.RESTORED)) {
+            throw new ServiceException(ErrorCode.ALREADY_RESTORED);
+        }
+        // 2. 실제 사용한 금액 꺼내오기
+        PointHistory spentPoint = pointHistoryRepository.findByOrderAndType(order, Type.SPENT).orElseThrow(
                 () -> new ServiceException(ErrorCode.POINT_HISTORY_NOT_FOUND)
         );
-        // 2. RESTORED 거래 내역 생성
+
+        Long restoredPrice = spentPoint.getPoint() * -1;
+        // 복구는 +(양수)값이 나와야 하는데, userPoint(포인트 사용)에서 -price로 값을 넘겨주고 있으니, -1을 곱해줌
+
+        // 2. 포인트 복구 내역 생성
         PointHistory restoredPoint = new PointHistory(
-                price, // 복구할 금액
+                restoredPrice, // 복구할 금액
                 Type.RESTORED,
                 user,
                 order
         );
         pointHistoryRepository.save(restoredPoint);
 
-        user.updatePoint(price);
+        user.updatePoint(restoredPrice);
     }
 
     // 포인트 적립 취소 (환불 시)
@@ -114,7 +135,7 @@ public class PointHistoryService {
 
     // 포인트 소멸
     @Transactional
-    public void expiredPoint(User user, Long price){
+    public void expiredPoint(User user, Long price) {
         PointHistory expiredPoint = new PointHistory(
                 -price,
                 Type.EXPIRED,
