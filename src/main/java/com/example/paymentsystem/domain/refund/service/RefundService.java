@@ -6,9 +6,11 @@ import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.membership.service.MembershipService;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
+import com.example.paymentsystem.domain.payment.dto.CancelRequestDto;
 import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
+import com.example.paymentsystem.domain.payment.service.PortOneService;
 import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import com.example.paymentsystem.domain.refund.dto.*;
 import com.example.paymentsystem.domain.refund.entity.Refund;
@@ -30,11 +32,12 @@ public class RefundService {
     private final PointHistoryService pointHistoryService;
     private final UserRepository userRepository;
     private final MembershipService membershipService;
+    private final PortOneService  portOneService;
 
 
     @Transactional
     public CreateRefundResponse createRefundRequest(Long paymentId, CreateRefundRequest request, Long userId) {
-        // 결제 건이 존재하는지 확인, 지금은 우리가 만든 PK를 찾는 로직으로 되어 있는데,
+        // 결제 건이 존재하는지 확인
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(
                 () -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND)
         );
@@ -57,7 +60,9 @@ public class RefundService {
             throw new ServiceException(ErrorCode.ALREADY_REFUNDED);
         }
 
-        // TODO PortOne 취소 API 호출
+        // TODO PortOne 결제 취소 API 호출
+        CancelRequestDto requestDto = new CancelRequestDto(request.refundReason());
+        portOneService.cancelPayment(payment.getPaymentId(), requestDto);
 
 
         // 환불 레코드 엔티티 내부로 캡슐화
@@ -79,7 +84,7 @@ public class RefundService {
             pointHistoryService.restorePoint(user, payment.getOrder(), payment.getOrder().getUser().getPoint());
         }
 
-        //TODO 멤버십 등급 재계산
+        // 멤버십 등급 재계산
         membershipService.updateMembership(user, -payment.getPaymentPrice());
 
         return new CreateRefundResponse(savedRefund);
