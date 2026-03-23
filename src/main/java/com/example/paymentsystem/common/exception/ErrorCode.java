@@ -26,13 +26,23 @@ public enum ErrorCode {
     INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "주문 확정은 주문 완료에서만 가능합니다."),
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
     // point
+    POINT_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "사용한 포인트 내역이 없습니다."),
+    EARNED_POINT_NOT_FOUND(HttpStatus.NOT_FOUND, "적립된 포인트 내역이 없습니다."),
 
     // user
 
     // refund
-    REFUND_NO_AUTHORITY(HttpStatus.FORBIDDEN,  "해당 환불에 권한이 없습니다.");
+    REFUND_NO_AUTHORITY(HttpStatus.FORBIDDEN,  "해당 환불에 권한이 없습니다."),
+    ALREADY_REFUNDED(HttpStatus.BAD_REQUEST, "이미 환불 처리가 완료된 결제건입니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 결제 정보를 찾을 수 없습니다."),
+    INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "결제 완료 상태인 경우에만 환불이 가능합니다."),
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "주문 완료인 상태만 환불이 가능합니다."),
+    REFUND_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문의 환불 내역이 없습니다."),
 
     // membership
+
+    MEMBERSHIP_NOT_FOUND(HttpStatus.NOT_FOUND, "멤버십 정보가 없습니다.");
+
 
     private final HttpStatus status;
     private final String message;
