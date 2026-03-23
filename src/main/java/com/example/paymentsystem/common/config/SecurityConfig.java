@@ -56,6 +56,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/pages/**").permitAll()
+                        //결제 검증 취소 테스트용
+                        .requestMatchers(HttpMethod.GET, "/api/payments/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/payments/*/cancel").permitAll()
 
                         // Public API 엔드포인트 허용
                         .requestMatchers("/api/public/**").permitAll()

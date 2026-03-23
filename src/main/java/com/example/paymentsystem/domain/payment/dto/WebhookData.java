@@ -4,6 +4,5 @@ public record WebhookData(
         String storeId,
         String paymentId,
         String transactionId,
-        String cancellationId,//Optional
-        String eventStatus
+        String cancellationId//Optional
 ) {}
