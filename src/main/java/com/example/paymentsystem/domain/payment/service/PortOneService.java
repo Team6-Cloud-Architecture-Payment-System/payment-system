@@ -1,5 +1,7 @@
 package com.example.paymentsystem.domain.payment.service;
 
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.common.properties.PortOneProperties;
 import com.example.paymentsystem.domain.payment.dto.CancelRequestDto;
 import com.example.paymentsystem.domain.payment.dto.CancelResponseDto;
@@ -24,7 +26,8 @@ import java.util.Map;
 public class PortOneService {
 
     private final PortOneProperties portOneProperties;//키불러오기위해
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
+    private static final String PORTONE_URL = "https://api.portone.io/payments/";
 
     //공통헤더
     private HttpHeaders createHeaders() {
@@ -34,10 +37,23 @@ public class PortOneService {
         return headers;
     }
 
+    //공통에러
+    private ServiceException handlePortOneError(HttpClientErrorException e) {
+        return switch (e.getStatusCode().value()) {
+            case 401 -> new ServiceException(ErrorCode.PORTONE_AUTHENTICATION_FAILED);
+            case 403 -> new ServiceException(ErrorCode.PORTONE_FORBIDDEN);
+            case 404 -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND);
+            case 409 -> new ServiceException(ErrorCode.ALREADY_CANCELLED_PAYMENT);
+            default -> new ServiceException(
+                    ErrorCode.PORTONE_API_ERROR,
+                    "포트원 API 오류: " + e.getStatusCode());
+        };
+    }
+
     //결제 검증
     public PortOneVerificationResponseDto getVerifyPayment(String paymentId) {
         try {
-            String portOneUrl = "https://api.portone.io/payments/" + paymentId;
+            String portOneUrl = PORTONE_URL + paymentId;
 
             HttpEntity<Void> entity = new HttpEntity<>(createHeaders());
 
@@ -50,11 +66,7 @@ public class PortOneService {
 
         } catch (HttpClientErrorException e) {
             log.error("포트원 API 오류: {}", e.getStatusCode());
-            switch (e.getStatusCode().value()) {
-                case 401, 403 -> throw new RuntimeException("포트원 인증 실패: 시크릿 키를 확인해주세요.");
-                case 404 -> throw new RuntimeException("존재하지 않는 paymentId입니다.");
-                default -> throw new RuntimeException("포트원 API 오류: " + e.getStatusCode());
-            }
+            throw handlePortOneError(e);//공통에러 메서드 사용
         } catch (Exception e) {
             log.error("포트원 서버 연결 오류: {}", e.getMessage());
             throw new RuntimeException("포트원 서버 연결에 실패했습니다.");
@@ -64,7 +76,7 @@ public class PortOneService {
     //결제 취소
     public CancelResponseDto cancelPayment(String paymentId, CancelRequestDto request) {
         try {
-            String portOneUrl = "https://api.portone.io/payments/" + paymentId + "/cancel";
+            String portOneUrl = PORTONE_URL + paymentId + "/cancel";
 
             Map<String, Object> body = new HashMap<>();
             if (StringUtils.hasText(request.reason())) {
@@ -82,15 +94,10 @@ public class PortOneService {
 
         } catch (HttpClientErrorException e) {
             log.error("포트원 취소 오류: {}", e.getStatusCode());
-            switch (e.getStatusCode().value()) {
-                case 401, 403 -> throw new RuntimeException("포트원 인증 실패");
-                case 404 -> throw new RuntimeException("존재하지 않는 paymentId입니다.");
-                case 409 -> throw new RuntimeException("이미 취소된 결제입니다.");
-                default -> throw new RuntimeException("포트원 취소 API 오류: " + e.getStatusCode());
-            }
+            throw handlePortOneError(e);
         } catch (Exception e) {
             log.error("포트원 서버 연결 오류: {}", e.getMessage());
-            throw new RuntimeException("포트원 서버 연결에 실패했습니다.");
+            throw new ServiceException(ErrorCode.PORTONE_SERVER_CONNECTION_FAILED);
         }
     }
 }

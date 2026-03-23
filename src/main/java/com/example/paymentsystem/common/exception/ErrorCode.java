@@ -7,7 +7,11 @@ import org.springframework.http.HttpStatus;
 public enum ErrorCode {
 
     // payment
-
+    PORTONE_AUTHENTICATION_FAILED(HttpStatus.UNAUTHORIZED, "포트원 인증에 실패했습니다."), // 401
+    PORTONE_FORBIDDEN(HttpStatus.FORBIDDEN, "포트원 API 접근 권한이 없습니다."), // 403
+    ALREADY_CANCELLED_PAYMENT(HttpStatus.CONFLICT, "이미 취소된 결제 건입니다."), // 409
+    PORTONE_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예상치 못한 포트원 API 오류가 발생했습니다."),
+    PORTONE_SERVER_CONNECTION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "포트원 서버 연결에 실패했습니다."),
     // auth
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 가입된 이메일 입니다."),
     DUPLICATED_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "이미 가입된 전화번호 입니다."),
