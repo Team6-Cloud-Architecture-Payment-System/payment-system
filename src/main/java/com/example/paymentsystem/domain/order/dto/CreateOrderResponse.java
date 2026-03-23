@@ -14,9 +14,9 @@ public record CreateOrderResponse(
         Long paymentPrice,
         String orderStatus,
         LocalDateTime orderedCreatedAt
-) {
-    public CreateOrderResponse(Order order) {
-        this(
+)  {
+    public static CreateOrderResponse from(Order order) {
+        return new CreateOrderResponse(
                 order.getId(),
                 order.getOrderNumber(),
                 order.getTotalPrice(),

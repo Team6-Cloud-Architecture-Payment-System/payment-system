@@ -51,6 +51,11 @@ public class OrderService {
         // 유저가 가진 포인트가 null이면 0으로 처리
         long userPoint = user.getPoint() == null ? 0L : user.getPoint();
 
+        // 포인트는 0원이거나 1000포인트 이상부터 사용 가능
+        if (usedPoint > 0 && usedPoint < 1000) {
+            throw new ServiceException(ErrorCode.INVALID_USED_POINT);
+        }
+
         // 유저가 포인트를 정말 그만큼 들고 있는지 확인
         if (userPoint < usedPoint) {
             throw new ServiceException(ErrorCode.INSUFFICIENT_POINT);
@@ -119,7 +124,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // 주문 생성 응답 반환
-        return new CreateOrderResponse(savedOrder);
+        return CreateOrderResponse.from(savedOrder);
     }
 
 
@@ -141,7 +146,7 @@ public class OrderService {
                 .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
 
         // 주문 상세 응답 반환
-        return new OrderDetailResponse(order);
+        return OrderDetailResponse.from(order);
     }
 
     // 주문 확정 (수동)
