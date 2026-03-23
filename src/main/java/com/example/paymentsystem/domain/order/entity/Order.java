@@ -107,5 +107,3 @@ public class Order extends BaseEntity {
                 && !this.orderCompletedAt.plusDays(5).isAfter(now);
     }
 }
-
-
