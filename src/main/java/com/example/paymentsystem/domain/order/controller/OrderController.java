@@ -2,8 +2,10 @@ package com.example.paymentsystem.domain.order.controller;
 import com.example.paymentsystem.common.dto.ApiResponse;
 import com.example.paymentsystem.domain.order.dto.CreateOrderRequest;
 import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
+import com.example.paymentsystem.domain.order.dto.OrderDetailResponse;
 import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
 import com.example.paymentsystem.domain.order.service.OrderService;
+import com.sun.security.auth.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -48,6 +50,18 @@ public class OrderController {
                 ApiResponse.success(orderService.getMyOrders(userId, sortedPageable))
         );
     }
+
+    // 주문 상세 조회
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> getOrderDetail(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long orderId
+    ) {
+        return ResponseEntity.ok(
+                ApiResponse.success(orderService.getOrderDetail(userId, orderId))
+        );
+    }
+
 
     // 주문 확정
     @PatchMapping("/{orderId}/confirm")

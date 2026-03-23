@@ -4,10 +4,7 @@ import com.example.paymentsystem.common.exception.ErrorCode;
 import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
-import com.example.paymentsystem.domain.order.dto.CreateOrderItemRequest;
-import com.example.paymentsystem.domain.order.dto.CreateOrderRequest;
-import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
-import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
+import com.example.paymentsystem.domain.order.dto.*;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderItem;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
@@ -137,7 +134,15 @@ public class OrderService {
     }
 
     // 주문 상세 조회
+    public OrderDetailResponse getOrderDetail(Long userId, Long orderId) {
 
+        // 해당 주문이 존재하는지 + 내 주문이 맞는지 확인
+        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
+
+        // 주문 상세 응답 반환
+        return new OrderDetailResponse(order);
+    }
 
     // 주문 확정 (수동)
     @Transactional

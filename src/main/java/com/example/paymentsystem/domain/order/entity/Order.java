@@ -82,7 +82,7 @@ public class Order extends BaseEntity {
     public void updateStatus(OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
     }
-git
+
     // 주문 완료
     public void complete() {
         if (this.orderStatus != OrderStatus.PAYMENT_PENDING) {
