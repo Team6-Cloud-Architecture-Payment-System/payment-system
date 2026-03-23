@@ -78,7 +78,7 @@ public class PaymentService {
         }
 
         // 4. 결제 상태 확인 (PAID 인지 확인)
-        if (portOneData.getStatus().equals(PaymentStatus.PAID.toString())) {
+        if (!portOneData.getStatus().equals(PaymentStatus.PAID.toString())) {
             throw new IllegalStateException("결제가 완료되지 않은 상태입니다. 상태: " + portOneData.getStatus());
         }
 
