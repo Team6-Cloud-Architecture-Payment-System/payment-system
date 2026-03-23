@@ -6,7 +6,6 @@ import com.example.paymentsystem.domain.refund.entity.Refund;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,4 +21,7 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
     List<Refund> findAllByPaymentOrderUser(User user);
 
     Page<Refund> findAllByPaymentOrderUser(User user, Pageable pageable);
+
+    // PortOne paymentId로 찾는 경우
+    // Optional<Payment> findByPaymentId(String paymentId);
 }

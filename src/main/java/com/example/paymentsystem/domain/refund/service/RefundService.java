@@ -1,7 +1,10 @@
 package com.example.paymentsystem.domain.refund.service;
 
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
+import com.example.paymentsystem.domain.membership.service.MembershipService;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
@@ -10,7 +13,6 @@ import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService
 import com.example.paymentsystem.domain.refund.dto.*;
 import com.example.paymentsystem.domain.refund.entity.Refund;
 import com.example.paymentsystem.domain.refund.repository.RefundRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,34 +29,37 @@ public class RefundService {
     private final PaymentRepository paymentRepository;
     private final PointHistoryService pointHistoryService;
     private final UserRepository userRepository;
+    private final MembershipService membershipService;
 
 
     @Transactional
-    public CreateRefundResponse save(Long paymentId, CreateRefundRequest request, Long userId) {
-        // 결제 건이 존재하는지 확인
+    public CreateRefundResponse createRefundRequest(Long paymentId, CreateRefundRequest request, Long userId) {
+        // 결제 건이 존재하는지 확인, 지금은 우리가 만든 PK를 찾는 로직으로 되어 있는데,
+        // PortOne paymentId로 찾아야 할 수도 있음 -> PortOne paymentId(String)
+        // 만약 PortOne
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(
-                () -> new EntityNotFoundException("결제 건이 존재하지 않습니다.")
+                () -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND)
         );
         // JWT토큰에서 userId 꺼내서 소유권 검증
         if (!payment.getOrder().getUser().getId().equals(userId)) {
-            throw new IllegalStateException("해당 결제건에 대한 권한이 없습니다.");
+            throw new ServiceException(ErrorCode.REFUND_NO_AUTHORITY);
         }
 
         // 결제 상태 검증
         if (payment.getPaymentStatus() != PaymentStatus.PAID) {
-            throw new IllegalStateException("결제 완료 상태가 아니면 환불할 수 없습니다.");
+            throw new ServiceException(ErrorCode.INVALID_PAYMENT_STATUS);
         }
         // 주문 상태 검증
         if (payment.getOrder().getOrderStatus() != OrderStatus.ORDER_COMPLETED) {
-            throw new IllegalStateException("주문 완료 상태가 아니면 환불할 수 없습니다.");
+            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
         }
 
         // 이미 환불 레코드가 존재하는지
         if (refundRepository.existsByPayment(payment)) {
-            throw new IllegalStateException("이미 환불된 결제건입니다.");
+            throw new ServiceException(ErrorCode.ALREADY_REFUNDED);
         }
 
-        //TODO PortOne 취소 API 호출
+        // TODO PortOne 취소 API 호출
 
 
         // 환불 레코드 엔티티 내부로 캡슐화
@@ -77,6 +82,7 @@ public class RefundService {
         }
 
         //TODO 멤버십 등급 재계산
+        membershipService.updateMembership(user, -payment.getPaymentPrice());
 
         return new CreateRefundResponse(savedRefund);
     }
@@ -85,11 +91,11 @@ public class RefundService {
     @Transactional(readOnly = true)
     public GetOrderRefundResponse getRefund(Long orderId, Long userId) {
         Refund refund = refundRepository.findByPaymentOrderId(orderId).orElseThrow(
-                () -> new EntityNotFoundException("해당 주문의 환불 내역이 없습니다.")
+                () -> new ServiceException(ErrorCode.REFUND_ORDER_NOT_FOUND)
         );
         // 본인 주문건이 맞는지 확인
         if (!refund.getPayment().getOrder().getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("해당 주문에 대한 환불내역 확인 권한이 없습니다.");
+            throw new ServiceException(ErrorCode.REFUND_NO_AUTHORITY);
         }
         return new GetOrderRefundResponse(refund);
     }
@@ -101,7 +107,7 @@ public class RefundService {
 
         // 유저의 존재 여부 확인
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new IllegalStateException("유저가 존재하지 않습니다.")
+                () -> new ServiceException(ErrorCode.USER_NOT_FOUND)
         );
         // 유저의 전체 환불내역 조회 페이징
         Page<Refund> refundPage = refundRepository.findAllByPaymentOrderUser(user, pageable);
