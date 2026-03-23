@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api")
@@ -25,12 +23,12 @@ public class RefundController {
 
     // 환불 요청
     @PostMapping("/payments/{paymentId}/refunds")
-    public ResponseEntity<ApiResponse<CreateRefundResponse>> createRefund(
+    public ResponseEntity<ApiResponse<CreateRefundResponse>> createRefundRequest(
             @PathVariable Long paymentId,
             @Valid @RequestBody CreateRefundRequest request,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(refundService.save(paymentId, request, userId)));
+                .body(ApiResponse.success(refundService.createRefundRequest(paymentId, request, userId)));
     }
 
     // @AuthenticationPrincipal >> SecurityContextHolder에 저장된 JWT 토큰을 꺼냄,

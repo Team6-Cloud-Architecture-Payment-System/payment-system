@@ -1,5 +1,7 @@
 package com.example.paymentsystem.domain.pointHistory.service;
 
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.order.entity.Order;
@@ -52,6 +54,9 @@ public class PointHistoryService {
     // 포인트 사용 (결제 시)
     @Transactional
     public void usePoint(User user, Order order, Long price) {
+        // TODO 최소 포인트를 정해서 검증 로직 추가
+
+
         // 잔액이 부족한지 체크
         Long currentPrice = calculatorPoint(user);
         if (currentPrice < price) {
@@ -115,6 +120,7 @@ public class PointHistoryService {
     }
 
     // 포인트 거래 내역 조회
+    @Transactional(readOnly = true)
     public Page<GetPointTransactionHistory> getPointTransactionHistory(Long userId, Pageable pageable) {
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new IllegalStateException("유저가 존재하지 않습니다.")
