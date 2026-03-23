@@ -45,10 +45,9 @@ public class PaymentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(paymentService.tryPayment(orderId, request)));
     }
 
-    // Controller 예시
-    @PatchMapping("/api/orders/{orderId}/payments/confirm")
-    public ResponseEntity<Void> completePayment(@RequestBody PaymentConfirmRequest request) {
-        paymentService.confirmPayment(request.paymentId());
+    @PostMapping("/api/payments/{paymentId}/confirm")
+    public ResponseEntity<Void> completePayment(@PathVariable String paymentId) {
+        paymentService.confirmPayment(paymentId);
         return ResponseEntity.ok().build();
     }
 
