@@ -54,11 +54,13 @@ public class PaymentService {
 
         //4. 결제 테이블에 저장 (주문 id, payments_id, 결제 상태(대기 기본값), 결제 금액)
 
-        return new PaymentTryResponse(paymentRepository.save(new Payment(
+        Payment saved = new Payment(
                 order,
                 generatedPaymentId,
                 PaymentStatus.WAIT,
-                request.paymentPrice())));
+                request.paymentPrice());
+
+        return new PaymentTryResponse(paymentRepository.save(saved));
     }
 
     @Transactional
