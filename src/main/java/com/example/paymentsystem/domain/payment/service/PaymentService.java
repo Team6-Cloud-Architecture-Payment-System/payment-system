@@ -99,6 +99,17 @@ public class PaymentService {
     @Transactional
     public void receiveWebhook(WebhookRequestDto dto,String webhookId) {
 
+        //webhook_id 중복 체크
+        if(webhookRepository.existsByWebhookId(webhookId)){
+            return;
+        }
+
+        //        중복이면 → 그냥 리턴
+//        중복 아니면 → 웹훅 테이블에 RECEIVED로 저장
+//        paymentId로 PortOne 결제 조회
+//        결제 확정 처리
+//        웹훅 테이블 상태 → PROCESSED 업데이트
+
         //이미 처리된 paymentId인 경우
         if(webhookRepository.existsByPaymentId(dto.data().paymentId())){
             return;

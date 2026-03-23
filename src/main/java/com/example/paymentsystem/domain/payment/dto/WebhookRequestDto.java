@@ -1,6 +1,10 @@
 package com.example.paymentsystem.domain.payment.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record WebhookRequestDto(
-       String type,
+
+        @JsonProperty("type")
+       String eventStatus,
        WebhookData data
 ){}
