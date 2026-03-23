@@ -80,13 +80,13 @@ public class PointHistoryService {
 
     // 포인트 사용 (결제 시)
     @Transactional
-    public void usePoint(User user, Order order, Long price) {
+    public void usePoint(Long userId, Order order, Long price) {
         if (price < MIN_USE_POINT) {
             throw new ServiceException(ErrorCode.POINT_BELOW_MINIMUM);
         }
 
         // 비관적 락을 통해 유저 정보 재조회 (동시성 방지)
-        User lockedUser = userRepository.findByIdWithPessimisticLock(user.getId())
+        User user = userRepository.findByIdWithPessimisticLock(userId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
         // 잔액이 부족한지 체크
         if (user.getPoint() < price) {
