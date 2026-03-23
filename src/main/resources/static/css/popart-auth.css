@@ -188,3 +188,55 @@ body:has(.auth-layout) {
 .pop-card-body .form-input {
     font-family: inherit;
 }
+
+/* Pop Art Loading Overlay */
+.pop-loader-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: #ffffff;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in;
+}
+
+.pop-loader-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.pop-loader-text {
+    font-family: 'Righteous', display;
+    font-size: 3rem;
+    color: #000;
+    margin-bottom: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    animation: popBounce 0.5s infinite alternate;
+}
+
+@keyframes popBounce {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+.pop-progress-bar-container {
+    width: 300px;
+    height: 40px;
+    background: #fff;
+    border: 4px solid #000;
+    box-shadow: 8px 8px 0px #000;
+    position: relative;
+    overflow: hidden;
+}
+
+.pop-progress-bar-fill {
+    height: 100%;
+    background: #000;
+    width: 0%;
+    transition: width 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}

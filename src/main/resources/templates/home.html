@@ -1,42 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
     <title>홈 - Commerce Demo</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-    <script th:src="@{/js/cookie-util.js}"></script>
-    <script th:src="@{/js/app-config.js}"></script>
-    <script th:src="@{/js/api-handler.js}"></script>
-    <script th:src="@{/js/api-validator.js}"></script>
-    <script th:src="@{/js/theme.js}"></script>
-    <script th:src="@{/js/auth-check.js}"></script>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar">
-        <div class="navbar-container">
-            <a href="/" class="navbar-brand">🏪 6하은칙</a>
-            <ul class="navbar-nav">
-                <li><a href="/" class="nav-link active">홈</a></li>
-                <li><a href="/pages/shop" class="nav-link">상점</a></li>
-                <li><a href="/pages/orders" class="nav-link">주문</a></li>
-                <li><a href="/pages/points" class="nav-link">포인트</a></li>
-                <li><a href="/pages/plans" class="nav-link">플랜</a></li>
-                <li><a href="/pages/subscribe" class="nav-link">구독 신청</a></li>
-                <li><a href="/pages/subscriptions" class="nav-link">구독 관리</a></li>
-            </ul>
-            <div class="navbar-actions">
-                <div class="config-badge-container"></div>
-                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">🌙</button>
-            </div>
-        </div>
-    </nav>
-
-    <div class="main-container">
-        <div class="content-area">
-            <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
+    <div th:fragment="content">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">
                 🛍️ Commerce Payment & Subscription Demo
             </h1>
             <p style="font-size: 1.25rem; color: var(--text-secondary); margin-bottom: 2rem;">
@@ -142,23 +111,7 @@
                     <li><strong>테스트:</strong> 각 페이지에서 버튼을 클릭하여 API 호출을 테스트하세요.</li>
                 </ol>
             </div>
-        </div>
-
-        <!-- API Panel -->
-        <div class="api-panel">
-            <div class="panel-section">
-                <h3 class="panel-title">📡 현재 엔드포인트</h3>
-                <div id="current-endpoint" class="endpoint-badge">아직 요청 없음</div>
-            </div>
-            <div class="panel-section">
-                <h3 class="panel-title">📤 요청</h3>
-                <textarea id="request-body" class="api-textarea"></textarea>
-            </div>
-            <div class="panel-section">
-                <h3 class="panel-title">📥 응답</h3>
-                <pre id="response-output" class="response-box">요청 대기 중...</pre>
-            </div>
-        </div>
+        
     </div>
 </body>
 </html>

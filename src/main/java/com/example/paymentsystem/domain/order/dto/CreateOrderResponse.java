@@ -8,7 +8,7 @@ import java.util.UUID;
 public record CreateOrderResponse(
 
         Long orderId,
-        UUID orderNumber,
+        String orderNumber,
         Long totalPrice,
         Long usedPoint,
         Long paymentPrice,

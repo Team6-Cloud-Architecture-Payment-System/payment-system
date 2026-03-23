@@ -23,6 +23,8 @@ public enum ErrorCode {
     INSUFFICIENT_STOCK(HttpStatus.BAD_REQUEST, "상품의 재고가 부족합니다."),
     INVALID_USED_POINT(HttpStatus.BAD_REQUEST, "사용 포인트가 올바르지 않습니다."),
     INVALID_INPUT_VALUE(HttpStatus.BAD_REQUEST, "주문 상품은 최소 1개 이상이어야 합니다."),
+    INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "주문 확정은 주문 완료에서만 가능합니다."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문을 찾을 수 없습니다."),
     // point
 
     // user
