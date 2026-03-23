@@ -23,7 +23,7 @@ public class PaymentService {
     private final WebhookRepository webhookRepository;
     private final OrderRepository orderRepository;
     private final PaymentIdGenerator paymentIdGenerator;
-    private final PortOneApiService portOneApiService;
+    private final PortOneService portApiService;
     private final OrderService orderService;
 
     @Transactional
@@ -64,7 +64,7 @@ public class PaymentService {
     @Transactional
     public void confirmPayment(String paymentId) {
         // 1. 포트원 서버에서 실제 결제 내역 조회
-        PortOnePaymentResponse portOneData = portOneApiService.getPaymentData(paymentId);
+        PortOneVerificationResponseDto portOneData = portApiService.getVerifyPayment(paymentId);
 
         // 2. 우리 DB에서 결제 시도 정보 조회
         Payment payment = paymentRepository.findByPaymentId(paymentId)
@@ -76,19 +76,21 @@ public class PaymentService {
         }
 
         // 4. 결제 상태 확인 (PAID 인지 확인)
-        if (!"PAID".equals(portOneData.status())) {
-            throw new IllegalStateException("결제가 완료되지 않은 상태입니다. 상태: " + portOneData.status());
+        if (!"PAID".equals(portOneData.getStatus())) {
+            throw new IllegalStateException("결제가 완료되지 않은 상태입니다. 상태: " + portOneData.getStatus());
         }
 
         // 5. 금액 검증 (DB 저장 금액 vs 포트원 실제 결제 금액)
-        if (!portOneData.amount().total().equals(payment.getPaymentPrice())) {
+        if (portOneData.getAmount().getTotal() != payment.getPaymentPrice()) {
             // 위변조 시 즉시 예외 발생 (필요 시 자동 환불 로직 추가)
             throw new IllegalStateException("결제 금액 위변조가 감지되었습니다.");
         }
 
         // 6. 상태 업데이트 및 비즈니스 로직 수행
         payment.stateUpdate(PaymentStatus.PAID);
-//        orderService.completeOrder(payment.getOrder());
+        orderService.confirmOrder(
+                payment.getOrder().getId(),
+                payment.getOrder().getUser().getId());
     }
 
     private void handleSecurityIssue(String impUid, String token) {
