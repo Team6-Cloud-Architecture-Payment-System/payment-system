@@ -22,4 +22,5 @@ public interface PointHistoryRepository extends JpaRepository<PointHistory, Long
 
     Page<GetPointTransactionHistory> findAllByUser(User user, Pageable pageable);
 
+    boolean existsByOrderAndType(Order order, Type type);
 }

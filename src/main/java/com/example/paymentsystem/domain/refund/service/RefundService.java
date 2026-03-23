@@ -6,9 +6,11 @@ import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.membership.service.MembershipService;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
+import com.example.paymentsystem.domain.payment.dto.CancelRequestDto;
 import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
+import com.example.paymentsystem.domain.payment.service.PortOneService;
 import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import com.example.paymentsystem.domain.refund.dto.*;
 import com.example.paymentsystem.domain.refund.entity.Refund;
@@ -30,18 +32,19 @@ public class RefundService {
     private final PointHistoryService pointHistoryService;
     private final UserRepository userRepository;
     private final MembershipService membershipService;
+    private final PortOneService  portOneService;
 
 
     @Transactional
     public CreateRefundResponse createRefundRequest(Long paymentId, CreateRefundRequest request, Long userId) {
-        // 결제 건이 존재하는지 확인, 지금은 우리가 만든 PK를 찾는 로직으로 되어 있는데,
+        // 결제 건이 존재하는지 확인
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(
                 () -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND)
         );
-        // JWT토큰에서 userId 꺼내서 소유권 검증
-        if (!payment.getOrder().getUser().getId().equals(userId)) {
-            throw new ServiceException(ErrorCode.REFUND_NO_AUTHORITY);
-        }
+        validateRefundAuthorization(payment, userId);
+        validatePaymentStatus(payment);
+        validateOrderStatus(payment);
+        validateAlreadyRefundRecord(payment);
 
         // 결제 상태 검증
         if (payment.getPaymentStatus() != PaymentStatus.PAID) {
@@ -57,7 +60,6 @@ public class RefundService {
             throw new ServiceException(ErrorCode.ALREADY_REFUNDED);
         }
 
-        // TODO PortOne 취소 API 호출
 
 
         // 환불 레코드 엔티티 내부로 캡슐화
@@ -71,17 +73,24 @@ public class RefundService {
         // 결제 상태 변경
         payment.stateUpdate(PaymentStatus.REFUNDED);
 
-        //TODO 주문 상태 변경
-//        payment.getOrder().updateStatus(OrderStatus.REFUNDED);
+        // 주문 상태 변경
+        payment.getOrder().updateStatus(OrderStatus.REFUNDED);
 
         // 포인트 복구 처리
         if (payment.getOrder().getUsedPoint() > 0) {
-            pointHistoryService.restorePoint(user, payment.getOrder(), payment.getOrder().getUser().getPoint());
+            pointHistoryService.restorePoint(user, payment.getOrder());
         }
 
-        //TODO 멤버십 등급 재계산
+        // 멤버십 등급 재계산
         membershipService.updateMembership(user, -payment.getPaymentPrice());
 
+        // PortOne 결제 취소 API 호출
+        try {
+            CancelRequestDto requestDto = new CancelRequestDto(request.refundReason());
+            portOneService.cancelPayment(payment.getPaymentId(), requestDto);
+        } catch (RuntimeException e) {
+            throw new ServiceException(ErrorCode.PORTONE_API_ERROR);
+        }
         return new CreateRefundResponse(savedRefund);
     }
 
@@ -122,5 +131,34 @@ public class RefundService {
                 refundPage.getTotalElements(),
                 refundPage.getTotalPages()
         );
+    }
+
+
+    // 토큰 꺼내서 소유권 검증
+    private void validateRefundAuthorization(Payment payment, Long userId) {
+        if (!payment.getOrder().getUser().getId().equals(userId)) {
+            throw new ServiceException(ErrorCode.REFUND_NO_AUTHORITY);
+        }
+    }
+
+    // 결제 상태 검증
+    private void validatePaymentStatus(Payment payment) {
+        if (payment.getPaymentStatus() != PaymentStatus.PAID) {
+            throw new ServiceException(ErrorCode.INVALID_PAYMENT_STATUS);
+        }
+    }
+
+    // 주문 상태 검증
+    private void validateOrderStatus(Payment payment) {
+        if (payment.getOrder().getOrderStatus() != OrderStatus.ORDER_COMPLETED) {
+            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+    }
+
+    // 이미 환불 레코드가 존재하는지 확인
+    private void validateAlreadyRefundRecord(Payment payment) {
+        if (refundRepository.existsByPayment(payment)) {
+            throw new ServiceException(ErrorCode.ALREADY_REFUNDED);
+        }
     }
 }
