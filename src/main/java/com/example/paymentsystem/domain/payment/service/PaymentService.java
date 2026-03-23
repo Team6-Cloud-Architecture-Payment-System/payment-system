@@ -36,7 +36,7 @@ public class PaymentService {
         );
 
         //2. 주문 금액이 결제 금액과 동일한지
-        if (order.getTotalPrice().equals(request.paymentPrice())) {
+        if (!order.getTotalPrice().equals(request.paymentPrice())) {
             throw new IllegalStateException("주문 금액이 일치하지 않습니다.");
         }
 
