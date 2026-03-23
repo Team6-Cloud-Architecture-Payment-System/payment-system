@@ -10,6 +10,8 @@ import com.example.paymentsystem.domain.auth.dto.response.TokenResponse;
 import com.example.paymentsystem.domain.auth.dto.response.UserInfoResponse;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
+import com.example.paymentsystem.domain.membership.entity.UserMembership;
+import com.example.paymentsystem.domain.membership.repository.UserMembershipRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class AuthService {
     private final UserRepository userRepository;
+    private final UserMembershipRepository userMembershipRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -42,6 +45,8 @@ public class AuthService {
                 .build();
 
         User savedUser = userRepository.save(user);
+        UserMembership userMembership = new UserMembership(savedUser);
+        userMembershipRepository.save(userMembership);
 
         return SignUpResponse.from(savedUser);
     }
