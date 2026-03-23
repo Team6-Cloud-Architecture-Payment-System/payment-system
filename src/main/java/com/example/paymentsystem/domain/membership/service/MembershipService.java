@@ -17,6 +17,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class MembershipService {
 
     private final MembershipTierRepository membershipTierRepository;
@@ -24,7 +25,6 @@ public class MembershipService {
     private final UserMembershipRepository userMembershipRepository;
 
     // 멤버십 등급 정책 조회 (MembershipTier)
-    @Transactional(readOnly = true)
     public List<GetMembershipTierResponse> getMembershipTier() {
         return membershipTierRepository.findAll().stream()
                 .map(GetMembershipTierResponse::new)
@@ -32,7 +32,6 @@ public class MembershipService {
     }
 
     // 유저의 멤버십 등급 조회 (UserMembership)
-    @Transactional(readOnly = true)
     public GetMyMembershipResponse getMyMembership(Long userId) {
         // 1. 유저 조회
         userRepository.findById(userId).orElseThrow(
@@ -55,6 +54,5 @@ public class MembershipService {
         );
         // 엔티티로 등급 계산 넘김
         userMembership.updateTotalPriceAndGrade(totalPaidPrice);
-        userMembershipRepository.save(userMembership);
     }
 }
