@@ -29,12 +29,11 @@
     <nav class="navbar">
         <div class="navbar-container">
             <a href="/" class="navbar-brand">
-                <span class="pop-title" style="color: #fff; margin: 0; font-size: 2rem; -webkit-text-stroke: 1px #000; text-shadow: 3px 3px 0px #000;">6하은칙</span>
+                <span class="pop-title" style="color: #fff; margin: 0; font-size: 2rem; -webkit-text-stroke: 1px #000; text-shadow: 3px 3px 0px #000;">🐶 6하은칙</span>
             </a>
 
             <ul class="navbar-nav">
                 <li><a href="/home" class="nav-link">Home</a></li>
-                <li><a href="/pages/shop" class="nav-link">Shop</a></li>
                 <li><a href="/pages/orders" class="nav-link">Orders</a></li>
                 <li><a href="/pages/plans" class="nav-link">Plans</a></li>
                 <li><a href="/pages/subscribe" class="nav-link">Subscribe</a></li>
@@ -42,36 +41,24 @@
             </ul>
 
             <div class="navbar-actions">
-                <div class="config-badge-container">
-                    <span class="config-badge skeleton" style="width: 100px; height: 24px;"></span>
-                </div>
-                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Container (2-Column Layout) -->
+    <!-- Main Content Container (1-Column Layout for Dog Shop) -->
     <div class="main-container">
-        <!-- Left: Page Content -->
         <div class="content-area">
             <div th:replace="${content}"></div>
         </div>
-
-        <!-- Right: API Panel -->
-        <div class="api-panel">
-            <div class="panel-section">
-                <h3 class="panel-title">📡 현재 엔드포인트</h3>
-                <div id="current-endpoint" class="endpoint-badge">아직 요청 없음</div>
-            </div>
-            <div class="panel-section">
-                <h3 class="panel-title">📤 요청</h3>
-                <textarea id="request-body" class="api-textarea"></textarea>
-            </div>
-            <div class="panel-section">
-                <h3 class="panel-title">📥 응답</h3>
-                <pre id="response-output" class="response-box">요청 대기 중...</pre>
-            </div>
-        </div>
     </div>
+
+    <!-- Global Footer -->
+    <footer class="footer">
+        <div class="footer-content text-center">
+            <h4 style="font-family: 'Righteous', display; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 0.5rem; text-transform: uppercase;">🐾 Team 6하은칙</h4>
+            <p style="font-weight: 800; font-size: 1rem; color: var(--text-secondary);">임하은, 선경안, 정호진, 정태규, 정채림</p>
+        </div>
+    </footer>
 </body>
 </html>
