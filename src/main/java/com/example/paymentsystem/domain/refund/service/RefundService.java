@@ -35,8 +35,6 @@ public class RefundService {
     @Transactional
     public CreateRefundResponse createRefundRequest(Long paymentId, CreateRefundRequest request, Long userId) {
         // 결제 건이 존재하는지 확인, 지금은 우리가 만든 PK를 찾는 로직으로 되어 있는데,
-        // PortOne paymentId로 찾아야 할 수도 있음 -> PortOne paymentId(String)
-        // 만약 PortOne
         Payment payment = paymentRepository.findById(paymentId).orElseThrow(
                 () -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND)
         );

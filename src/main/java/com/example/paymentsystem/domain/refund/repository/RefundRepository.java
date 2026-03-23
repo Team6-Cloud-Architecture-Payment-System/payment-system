@@ -22,6 +22,4 @@ public interface RefundRepository extends JpaRepository<Refund, Long> {
 
     Page<Refund> findAllByPaymentOrderUser(User user, Pageable pageable);
 
-    // PortOne paymentId로 찾는 경우
-    // Optional<Payment> findByPaymentId(String paymentId);
 }
