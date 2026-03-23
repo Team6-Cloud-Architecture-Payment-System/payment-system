@@ -9,6 +9,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.List;
 
 @Getter
 @Entity
@@ -43,19 +45,19 @@ public class UserMembership {
     }
 
     // 등급 계산 로직
-    private MembershipName recalculatingGrade(Long totalPrice) {
-        if (totalPrice <= 50000) {
-            return MembershipName.NORMAL;
-        } else if (totalPrice <= 100000){
-            return MembershipName.VIP;
-        } else {
-            return MembershipName.VVIP;
-        }
-    }
+    public void updateTotalPriceAndGrade(Long addedPrice, List<MembershipTier> tiers) {
+        // 1. 누적 금액 업데이트
+        this.totalPrice += addedPrice;
 
-    // 총 결제 금액 업데이트 및 등급 재 계산
-    public void updateTotalPriceAndGrade(Long totalPrice) {
-        this.totalPrice += totalPrice;
-        this.gradeNow = recalculatingGrade(this.totalPrice);
+        // 2. 등급 재계산 (DB 정책 기반)
+        // minPrice가 높은 순서대로 정렬하여 가장 먼저 만족하는 등급을 선택
+        this.gradeNow = tiers.stream()
+                .filter(tier -> this.totalPrice >= tier.getMinPrice())
+                .sorted(Comparator.comparing(MembershipTier::getMinPrice).reversed())
+                .map(MembershipTier::getMembershipName)
+                .findFirst()
+                .orElse(MembershipName.NORMAL); // 기본값
+
+        this.gradeUpdatedAt = LocalDateTime.now();
     }
 }

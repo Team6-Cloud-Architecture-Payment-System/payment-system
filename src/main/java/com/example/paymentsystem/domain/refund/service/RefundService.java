@@ -82,7 +82,7 @@ public class RefundService {
         }
 
         // 멤버십 등급 재계산
-        membershipService.updateMembership(user, -payment.getPaymentPrice());
+        membershipService.updateMembership(user.getId(), -payment.getPaymentPrice());
 
         // PortOne 결제 취소 API 호출
         try {
