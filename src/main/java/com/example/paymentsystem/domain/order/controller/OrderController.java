@@ -48,4 +48,18 @@ public class OrderController {
                 ApiResponse.success(orderService.getMyOrders(userId, sortedPageable))
         );
     }
+
+    // 주문 확정
+    @PatchMapping("/{orderId}/confirm")
+    public ResponseEntity<ApiResponse<?>> confirmOrder(
+            @AuthenticationPrincipal Long userId,
+            @PathVariable Long orderId
+    ) {
+        orderService.confirmOrder(userId, orderId);
+
+        return ResponseEntity.ok(
+                ApiResponse.success("주문이 확정되었습니다.")
+        );
+    }
 }
+
