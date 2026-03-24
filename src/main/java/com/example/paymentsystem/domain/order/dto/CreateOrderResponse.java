@@ -3,7 +3,6 @@ package com.example.paymentsystem.domain.order.dto;
 import com.example.paymentsystem.domain.order.entity.Order;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record CreateOrderResponse(
 
