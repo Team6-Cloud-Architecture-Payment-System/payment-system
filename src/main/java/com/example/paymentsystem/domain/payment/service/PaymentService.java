@@ -1,5 +1,7 @@
 package com.example.paymentsystem.domain.payment.service;
 
+import com.example.paymentsystem.common.exception.ErrorCode;
+import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
@@ -15,6 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -29,58 +33,62 @@ public class PaymentService {
     @Transactional
     public PaymentTryResponse tryPayment(Long orderId) {
 
-        //1. 존재 하는 주문인지
+        // 1. 존재하는 주문인지 검증
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
 
-        Order order = orderRepository.findById(orderId).orElseThrow(
-                () -> new IllegalStateException("주문을 찾을 수 없습니다.")
+        // 2. 결제 가능한 주문 상태인지 검증
+        if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_PENDING)) {
+            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+
+        // 3. 기존 PENDING 상태의 결제가 존재하면 FAIL 처리
+        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PENDING)) {
+            List<Payment> payments = paymentRepository.findByOrderId(orderId);
+            for (Payment payment : payments) {
+                payment.stateUpdate(PaymentStatus.FAIL);
+            }
+        }
+
+        // 4. PortOne에 보낼 paymentId 생성
+        String generatedPaymentId = paymentIdGenerator.generate(
+                String.valueOf(order.getUser().getId())
         );
 
-        if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_PENDING)) {
-            throw new IllegalStateException("결제할 수 없는 주문 상태입니다.");
-        }
-
-        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PENDING)) {
-            throw new IllegalStateException("이미 결제 진행 중인 주문입니다.");
-        }
-
-        //3. PortOne에 보낼 payments_id 생성
-
-        String generatedPaymentId = paymentIdGenerator.generate(String.valueOf(order.getUser().getId()));
-
-        //4. 결제 테이블에 저장 (주문 id, payments_id, 결제 상태(대기 기본값), 결제 금액)
-
+        // 5. 결제 테이블에 저장 (주문 id, paymentId, 결제 상태(PENDING), 결제 금액)
         Payment saved = new Payment(
                 order,
                 generatedPaymentId,
                 PaymentStatus.PENDING,
-                order.getTotalPrice());
+                order.getTotalPrice()
+        );
 
         return new PaymentTryResponse(paymentRepository.save(saved));
     }
 
     @Transactional
     public void confirmPayment(String paymentId) {
+
         // 1. 포트원 서버에서 실제 결제 내역 조회
         PortOneVerificationResponseDto portOneData = portApiService.getVerifyPayment(paymentId);
 
         // 2. 우리 DB에서 결제 시도 정보 조회
         Payment payment = paymentRepository.findByPaymentId(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("결제 내역을 찾을 수 없습니다."));
+                .orElseThrow(() -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        // 3. 중복 처리 방지 (이미 완료된 경우 종료)
+        // 3. 중복 처리 방지 (이미 완료된 경우 예외)
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            return;
+            throw new ServiceException(ErrorCode.ALREADY_PAID);
         }
 
-        // 4. 결제 상태 확인 (PAID 인지 확인)
+        // 4. 포트원 결제 상태 확인 (PAID 여부)
         if (!portOneData.getStatus().equals(PaymentStatus.PAID.toString())) {
-            throw new IllegalStateException("결제가 완료되지 않은 상태입니다. 상태: " + portOneData.getStatus());
+            throw new ServiceException(ErrorCode.PAYMENT_NOT_COMPLETED);
         }
 
         // 5. 금액 검증 (DB 저장 금액 vs 포트원 실제 결제 금액)
         if (portOneData.getAmount().getTotal() != payment.getPaymentPrice()) {
-            // 위변조 시 즉시 예외 발생 (필요 시 자동 환불 로직 추가)
-            throw new IllegalStateException("결제 금액 위변조가 감지되었습니다.");
+            throw new ServiceException(ErrorCode.PAYMENT_FORGERY_DETECTED);
         }
 
         Order order = payment.getOrder();
@@ -90,7 +98,8 @@ public class PaymentService {
         orderService.completeOrder(order);
         orderService.confirmOrder(
                 order.getId(),
-                order.getUser().getId());
+                order.getUser().getId()
+        );
     }
 
     private void handleSecurityIssue(String impUid, String token) {

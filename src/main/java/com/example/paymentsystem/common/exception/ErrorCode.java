@@ -12,6 +12,10 @@ public enum ErrorCode {
     ALREADY_CANCELLED_PAYMENT(HttpStatus.CONFLICT, "이미 취소된 결제 건입니다."), // 409
     PORTONE_API_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "예상치 못한 포트원 API 오류가 발생했습니다."),
     PORTONE_SERVER_CONNECTION_FAILED(HttpStatus.SERVICE_UNAVAILABLE, "포트원 서버 연결에 실패했습니다."),
+    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND,"결제 내역을 찾을 수 없습니다."),
+    ALREADY_PAID(HttpStatus.BAD_REQUEST,"이미 완료된 결제입니다."),
+    PAYMENT_FORGERY_DETECTED(HttpStatus.CONFLICT, "결제 금액 위변조가 감지되었습니다."),
+    PAYMENT_NOT_COMPLETED(HttpStatus.valueOf(422), "결제가 완료되지 않은 상태입니다."),
     // auth
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 가입된 이메일 입니다."),
     DUPLICATED_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "이미 가입된 전화번호 입니다."),
@@ -38,7 +42,6 @@ public enum ErrorCode {
     // refund
     REFUND_NO_AUTHORITY(HttpStatus.FORBIDDEN,  "해당 환불에 권한이 없습니다."),
     ALREADY_REFUNDED(HttpStatus.BAD_REQUEST, "이미 환불 처리가 완료된 결제건입니다."),
-    PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 결제 정보를 찾을 수 없습니다."),
     INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "결제 완료 상태인 경우에만 환불이 가능합니다."),
     REFUND_ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 주문의 환불 내역이 없습니다."),
     ALREADY_RESTORED(HttpStatus.BAD_REQUEST, "이미 복구된 내역이 존재합니다."),

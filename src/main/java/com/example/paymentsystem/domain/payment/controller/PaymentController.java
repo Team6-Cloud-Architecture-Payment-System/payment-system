@@ -39,8 +39,7 @@ public class PaymentController {
 
     @PostMapping("/api/orders/{orderId}/payments")
     public ResponseEntity<ApiResponse> tryPayment(
-            @PathVariable Long orderId,
-            @RequestBody PaymentTryRequest request
+            @PathVariable Long orderId
             ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(paymentService.tryPayment(orderId)));
     }
