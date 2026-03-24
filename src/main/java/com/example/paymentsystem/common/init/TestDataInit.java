@@ -3,7 +3,14 @@ package com.example.paymentsystem.common.init;
 import com.example.paymentsystem.common.exception.ErrorCode;
 import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.dto.request.SignUpRequest;
+import com.example.paymentsystem.domain.auth.entity.User;
+import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.auth.service.AuthService;
+import com.example.paymentsystem.domain.membership.entity.MembershipName;
+import com.example.paymentsystem.domain.membership.entity.MembershipTier;
+import com.example.paymentsystem.domain.membership.entity.UserMembership;
+import com.example.paymentsystem.domain.membership.repository.MembershipTierRepository;
+import com.example.paymentsystem.domain.membership.repository.UserMembershipRepository;
 import com.example.paymentsystem.domain.product.entity.Product;
 import com.example.paymentsystem.domain.product.entity.ProductStatus;
 import com.example.paymentsystem.domain.product.repository.ProductRepository;
@@ -22,12 +29,45 @@ public class TestDataInit implements ApplicationRunner {
 
     private final AuthService authService;
     private final ProductRepository productRepository;
+    private final UserRepository userRepository;
+    private final MembershipTierRepository  membershipTierRepository;
+    private final UserMembershipRepository userMembershipRepository;
 
     @Override
     public void run(ApplicationArguments args) {
+
+        // 1. 등급 정책 데이터 먼저 주입
+        if (membershipTierRepository.count() == 0) {
+            membershipTierRepository.saveAll(List.of(
+                    new MembershipTier(0.01, "기본", MembershipName.NORMAL, 0L, 100000L),
+                    new MembershipTier(0.03, "우수", MembershipName.VIP, 100000L, 300000L),
+                    new MembershipTier(0.05, "최우수", MembershipName.VVIP, 300000L, null)
+            ));
+            log.info("멤버십 등급 정책 등록 완료");
+        }
+// 1. 특정 이메일("admin@test.com")로만 조회.
+        String email = "admin@test.com";
+        User adminUser = userRepository.findByEmail(email).orElse(null);
+
+// 2. '그 이메일'을 쓰는 사람이 없을 때만 가입시킴
+        if (adminUser == null) {
+            try {
+                authService.signUp(new SignUpRequest("임하은", email, "admin", "01011113333"));
+                // 가입 후 다시 조회해서 객체를 확보합니다.
+                adminUser = userRepository.findByEmail(email).orElseThrow();
+            } catch (Exception e) {
+                log.error("관리자 계정 생성 실패", e);
+            }
+        }
+
+// 3. 해당 유저의 UserMembership 데이터가 없으면 생성
+        if (adminUser != null && !userMembershipRepository.existsByUserId(adminUser.getId())) {
+            userMembershipRepository.save(new UserMembership(adminUser));
+            log.info("임시 회원용 멤버십 데이터 생성 완료");
+        }
         // 프론트 로그인 페이지에 표시된 테스트 계정
         String name = "임하은";
-        String email = "admin@test.com";
+        email = "admin@test.com";
         String password = "admin";
         String phoneNumber = "01011113333";
 
