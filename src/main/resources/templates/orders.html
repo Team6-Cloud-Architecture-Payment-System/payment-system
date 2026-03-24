@@ -53,6 +53,22 @@
             </div>
         </div>
 
+        <!-- 환불 사유 입력 모달 -->
+        <div id="refund-reason-modal" onclick="if(event.target === this) closeRefundReasonModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 2100; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+            <div style="background: var(--bg-primary); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 520px; border: 4px solid var(--border); box-shadow: 12px 12px 0px var(--shadow);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 3px solid var(--border); padding-bottom: 0.75rem;">
+                    <h3 style="margin: 0; font-family: 'Righteous', display; text-transform: uppercase;">환불 요청</h3>
+                    <button onclick="closeRefundReasonModal()" style="background: var(--text-primary); color: var(--bg-primary); border: 2px solid var(--border); border-radius: 50%; font-size: 1.2rem; cursor: pointer; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: 2px 2px 0px var(--shadow);">&times;</button>
+                </div>
+                <p style="margin: 0 0 0.75rem 0; font-weight: 700;">환불 사유를 입력해주세요.</p>
+                <textarea id="refund-reason-input" rows="4" placeholder="예: 고객 단순 변심" style="width: 100%; border: 3px solid var(--border); border-radius: var(--radius-sm); padding: 0.75rem; font-size: 0.95rem; resize: vertical; background: var(--bg-tertiary); color: var(--text-primary);"></textarea>
+                <div style="display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 1rem;">
+                    <button class="btn" style="background: #E5E7EB; color: var(--text-primary);" onclick="closeRefundReasonModal()">취소</button>
+                    <button class="btn" style="background: #FCA5A5; color: var(--text-primary);" onclick="submitRefundRequest()">환불 요청</button>
+                </div>
+            </div>
+        </div>
+
         <script>
             // 현재 사용자 정보
             let currentUser = null;
@@ -60,6 +76,7 @@
             let selectedOrderUid = null;
             // 세션 동안 주문별 결제 식별자 캐시 (결제 직후 취소 버튼 연계를 위해 사용)
             let orderPaymentUidMap = {};
+            let pendingRefundPaymentId = null;
 
             function getSelectedOrderUidFromQuery() {
                 try {
@@ -259,14 +276,14 @@
                             pathParams: { orderId: Number(paymentOrderId) },
                             body: { payment_price: 0 }
                         });
-                        
+
                         const createData = createResult?.data ?? {};
                         const serverPaymentId = createData.paymentId || createData.paymentsId || createData.id;
-                        
+
                         if (!serverPaymentId) {
                             throw new Error('결제 ID를 생성하지 못했습니다.');
                         }
-                        
+
                         // 2. 포트원 창을 띄우지 않고 곧바로 결제 확정(검증) API 호출
                         await makeApiRequest('confirm-payment', {
                             pathParams: serverPaymentId
@@ -331,7 +348,7 @@
                 }
 
                 if (status === 'PAID' || status === '결제 완료' || status === '주문 완료') {
-                    return `<button class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #34D399; color: var(--text-primary);" onclick="confirmOrder('\${orderUid}')">
+                    return `<button class="btn" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: #34D399; color: var(--text-primary);" onclick="confirmOrder('${order.orderId || orderUid}')">
                                 ✅ 주문확정
                             </button>`;
                 }
@@ -345,16 +362,50 @@
                 return `<span style="color: var(--text-secondary); font-size: 1rem; font-weight: 800;">-</span>`;
             }
 
-            async function confirmOrder(orderUid) {
+            async function refreshHeaderPoint() {
+                try {
+                    if (typeof window !== 'undefined' && Object.prototype.hasOwnProperty.call(window, 'sharedCurrentUserPromise')) {
+                        window.sharedCurrentUserPromise = null;
+                    }
+
+                    const latestUserRaw = await makeApiRequest('get-current-user', {});
+                    const latestUser = unwrapCommonResponse(latestUserRaw);
+                    currentUser = latestUser || currentUser;
+
+                    if (!latestUser) return;
+
+                    const pointValue = Number(latestUser.point ?? latestUser.myPoint ?? 0) || 0;
+                    const navbarActions = document.querySelector('.navbar-actions');
+                    if (!navbarActions) return;
+
+                    const pointSpan = Array.from(navbarActions.querySelectorAll('span'))
+                        .find(el => el.textContent && el.textContent.includes('💎'));
+                    if (pointSpan) {
+                        pointSpan.textContent = `💎 ${pointValue.toLocaleString()} P`;
+                    }
+                } catch (error) {
+                    console.error('Failed to refresh header point:', error);
+                }
+            }
+
+            async function confirmOrder(orderId) {
+                const normalizedOrderId = Number(orderId);
+                if (orderId === undefined || orderId === null || Number.isNaN(normalizedOrderId)) {
+                    showNotification('주문 확정에 필요한 orderId가 올바르지 않습니다.', 'error');
+                    return;
+                }
+
                 try {
                     const raw = await makeApiRequest('confirm-order', {
-                        pathParams: orderUid
+                        pathParams: { orderId: normalizedOrderId }
                     });
                     const data = unwrapCommonResponse(raw);
 
-                    const orderNumber = data?.orderNumber ?? '-';
-                    const status = data?.status ?? 'CONFIRMED';
-                    showNotification(`주문 확정 성공! (상태: ${status})`, 'success');
+                    const successMessage = typeof data === 'string'
+                        ? data
+                        : (data?.message || '주문이 확정되었습니다.');
+                    showNotification(successMessage, 'success');
+                    await refreshHeaderPoint();
                     await loadOrders();
                 } catch (error) {
                     console.error('Failed to confirm order:', error);
@@ -405,7 +456,7 @@
                         try {
                             // client-api-config.yml 에 매핑된 'get-order' (/api/orders/{orderId}) API를 실제로 호출합니다.
                             raw = await makeApiRequest('get-order', { pathParams: { orderId: finalOrderUid } });
-                        } catch(e) { 
+                        } catch(e) {
                             console.error('Failed to fetch get-order API from backend:', e);
                         }
 
@@ -450,7 +501,7 @@
                                 const unitPrice = Number(item.productPrice || item.price || dTotalAmount);
                                 const qty = Number(item.quantity || 1);
                                 const subtotal = Number(item.subtotalPrice || (unitPrice * qty));
-                                
+
                                 itemsHtml += `
                                     <tr style="background: var(--bg-primary);">
                                         <td style="padding: 0.75rem; border-bottom: 3px solid var(--border); border-right: 3px solid var(--border); font-weight: 700;">${item.productName || item.productId || '상품'}</td>
@@ -463,15 +514,19 @@
                             itemsHtml += `</tbody></table>`;
                         }
 
-                        const paymentInfo = data.paymentUid ? `<br><strong>결제 UID:</strong> <span style="font-family: monospace; font-size: 0.9em; background: var(--bg-primary); padding: 0.2rem 0.4rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-weight: bold;">${data.paymentUid}</span>` : '';
+                        const detailPaymentId = data.paymentId || data.paymentsId || data.paymentUid || orderPaymentUidMap[dOrderUid];
+                        const paymentInfo = detailPaymentId ? `<br><strong>결제 ID:</strong> <span style="font-family: monospace; font-size: 0.9em; background: var(--bg-primary); padding: 0.2rem 0.4rem; border: 2px solid var(--border); border-radius: var(--radius-sm); font-weight: bold;">${detailPaymentId}</span>` : '';
 
                         let actionHtml = '';
-                        if (!data.paymentUid && (dStatus === 'PENDING' || dStatus === '결제 대기')) {
+                        const isPendingStatus = (dStatus === 'PENDING' || dStatus === '결제 대기');
+                        const isPaidStatus = (dStatus === 'PAID' || dStatus === '결제 완료' || dStatus === '주문 완료');
+                        const isConfirmedStatus = (dStatus === 'CONFIRMED' || dStatus === '주문 확정');
+
+                        if (!detailPaymentId && isPendingStatus) {
                             actionHtml = `<div style="text-align: right; margin-top: 1.5rem;"><button class="btn" style="background: #FCD34D; color: var(--text-primary);" onclick="cancelOrderFromModal('${dOrderUid}')">주문취소</button></div>`;
-                        } else if (data.paymentUid || dStatus === 'PAID' || dStatus === '결제 완료' || dStatus === '주문 완료') {
-                            const pUid = data.paymentUid || orderPaymentUidMap[dOrderUid];
-                            if (pUid) {
-                                actionHtml = `<div style="text-align: right; margin-top: 1.5rem;"><button class="btn" style="background: #FCA5A5; color: var(--text-primary);" onclick="cancelPaymentFromModal('${pUid}')">결제취소/환불</button></div>`;
+                        } else if (!isConfirmedStatus && (detailPaymentId || isPaidStatus)) {
+                            if (detailPaymentId) {
+                                actionHtml = `<div style="text-align: right; margin-top: 1.5rem;"><button class="btn" style="background: #FCA5A5; color: var(--text-primary);" onclick="cancelPaymentFromModal('${detailPaymentId}')">결제취소/환불</button></div>`;
                             }
                         }
 
@@ -526,20 +581,55 @@
                 }
             }
 
-            // 모달 내 결제 취소
-            async function cancelPaymentFromModal(paymentUid) {
-                if (!confirm('정말 이 결제를 취소/환불하시겠습니까?')) return;
+            // 모달 내 결제 취소 버튼 클릭 -> 환불 사유 모달 오픈
+            function cancelPaymentFromModal(paymentId) {
+                const normalizedPaymentId = String(paymentId ?? '').trim();
+                if (!normalizedPaymentId) {
+                    showNotification('환불 요청에 필요한 paymentId가 올바르지 않습니다.', 'error');
+                    return;
+                }
+
+                pendingRefundPaymentId = normalizedPaymentId;
+                const modal = document.getElementById('refund-reason-modal');
+                const input = document.getElementById('refund-reason-input');
+                if (input) input.value = '';
+                if (modal) modal.style.display = 'flex';
+                if (input) input.focus();
+            }
+
+            function closeRefundReasonModal() {
+                pendingRefundPaymentId = null;
+                const modal = document.getElementById('refund-reason-modal');
+                const input = document.getElementById('refund-reason-input');
+                if (input) input.value = '';
+                if (modal) modal.style.display = 'none';
+            }
+
+            async function submitRefundRequest() {
+                if (!pendingRefundPaymentId) {
+                    showNotification('환불 대상 결제 정보를 찾을 수 없습니다.', 'error');
+                    return;
+                }
+
+                const input = document.getElementById('refund-reason-input');
+                const reason = (input?.value || '').trim();
+                if (!reason) {
+                    showNotification('환불 사유를 입력해주세요.', 'warning');
+                    return;
+                }
+
                 try {
-                    const raw = await makeApiRequest('cancel-payment', {
-                        pathParams: paymentUid,
-                        body: { reason: 'Customer request' }
+                    await makeApiRequest('create-refund', {
+                        pathParams: { paymentId: pendingRefundPaymentId },
+                        body: { refundReason: reason }
                     });
-                    showNotification('결제 취소 성공!', 'success');
+                    showNotification('환불 요청이 접수되었습니다.', 'success');
+                    closeRefundReasonModal();
                     closeOrderDetailModal();
                     await loadOrders();
                 } catch (error) {
-                    console.error('Failed to cancel payment:', error);
-                    showNotification('결제 취소 실패', 'error');
+                    console.error('Failed to create refund request:', error);
+                    showNotification(`환불 요청 실패: ${error.message || '알 수 없는 오류'}`, 'error');
                 }
             }
         </script>
