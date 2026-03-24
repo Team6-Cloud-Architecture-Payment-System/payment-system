@@ -183,8 +183,8 @@ public class OrderService {
         // 주문 확정 시 포인트 지급 로직 연결
         pointHistoryService.earnPoint(order.getUser(), order);
     }
-    // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
 
+    // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
     @Transactional
     public void completeOrder(Order order) {
         order.complete();
