@@ -46,22 +46,6 @@ public class RefundService {
         validateOrderStatus(payment);
         validateAlreadyRefundRecord(payment);
 
-        // 결제 상태 검증
-        if (payment.getPaymentStatus() != PaymentStatus.PAID) {
-            throw new ServiceException(ErrorCode.INVALID_PAYMENT_STATUS);
-        }
-        // 주문 상태 검증
-        if (payment.getOrder().getOrderStatus() != OrderStatus.ORDER_COMPLETED) {
-            throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
-        }
-
-        // 이미 환불 레코드가 존재하는지
-        if (refundRepository.existsByPayment(payment)) {
-            throw new ServiceException(ErrorCode.ALREADY_REFUNDED);
-        }
-
-
-
         // 환불 레코드 엔티티 내부로 캡슐화
         Refund refund = Refund.of(payment, request.refundReason());
 

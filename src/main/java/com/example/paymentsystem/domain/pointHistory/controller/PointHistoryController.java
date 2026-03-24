@@ -18,15 +18,9 @@ import org.springframework.web.bind.annotation.*;
 public class PointHistoryController {
     private final PointHistoryService pointHistoryService;
 
-    // 현재 내 포인트 조회
-//    @GetMapping("/me")
-//    public ResponseEntity<ApiResponse<GetMyPointHistoryResponse>> getMyPoint(
-//            @RequestParam Long userId
-//    ) {
-//        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(pointHistoryService.getMyPoint(userId)));
-//    }
+    // 포인트 거래 내역 조회
     @GetMapping("/me/history")
-    public ResponseEntity<ApiResponse<Page<GetPointTransactionHistory>>> getPointTransactionHistory(
+    public ResponseEntity<ApiResponse<GetPointTransactionHistory>> getPointTransactionHistory(
             @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
