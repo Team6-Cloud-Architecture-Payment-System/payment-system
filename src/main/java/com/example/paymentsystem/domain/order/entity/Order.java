@@ -28,7 +28,7 @@ public class Order extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String orderNumber;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -98,12 +98,5 @@ public class Order extends BaseEntity {
             throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
         }
         this.orderStatus = OrderStatus.ORDER_CONFIRMED;
-    }
-
-    // 주문 자동 확정 대상인지 확인 (주문 완료 후 5일 지났는지)
-    public boolean canAutoConfirm(LocalDateTime now) {
-        return this.orderStatus == OrderStatus.ORDER_COMPLETED
-                && this.orderCompletedAt != null
-                && !this.orderCompletedAt.plusDays(5).isAfter(now);
     }
 }

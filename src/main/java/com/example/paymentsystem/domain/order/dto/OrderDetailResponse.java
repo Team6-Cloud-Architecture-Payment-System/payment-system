@@ -17,8 +17,8 @@ public record OrderDetailResponse (
         LocalDateTime orderedCreatedAt,
         List<OrderItemDetail> orderItems
 ) {
-    public OrderDetailResponse(Order order) {
-        this(
+    public static OrderDetailResponse from(Order order) {
+        return new OrderDetailResponse(
                 order.getId(),
                 order.getOrderNumber(),
                 order.getTotalPrice(),
@@ -27,7 +27,7 @@ public record OrderDetailResponse (
                 order.getOrderStatus().getStatusName(),
                 order.getCreatedAt(),
                 order.getOrderItems().stream()
-                        .map(OrderItemDetail::new)
+                        .map(OrderItemDetail::from)
                         .toList()
         );
     }
@@ -39,8 +39,8 @@ public record OrderDetailResponse (
             Long quantity,
             Long subtotalPrice
     ) {
-        public OrderItemDetail(OrderItem orderItem) {
-            this(
+        public static OrderItemDetail from(OrderItem orderItem) {
+            return new OrderItemDetail(
                     orderItem.getProductId(),
                     orderItem.getProductName(),
                     orderItem.getProductPrice(),
