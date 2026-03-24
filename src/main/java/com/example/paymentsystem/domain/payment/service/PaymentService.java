@@ -94,6 +94,7 @@ public class PaymentService {
         }
 
         // 6. 재고 차감
+        payment.stateUpdate(PaymentStatus.PAID);
         orderService.stockReduce(payment.getOrder());
     }
 
