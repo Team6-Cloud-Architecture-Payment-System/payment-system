@@ -314,28 +314,12 @@ function getFieldExample(fieldDef) {
 }
 
 /**
- * API 검증 에러를 화면에 표시
+ * API 검증 에러를 화면에 표시 (콘솔 전용으로 변경)
  */
 function showApiValidationError(endpointKey, contract, errors) {
-    // 간단한 요약 메시지
     const errorCount = errors.length;
-    const firstError = errors[0];
-
-    const message =
-        `⚠️ API 응답 형식 오류 (${errorCount}개)\n\n` +
-        `엔드포인트: ${contract.method} ${contract.url}\n` +
-        `첫 번째 오류: ${firstError}\n\n` +
-        `🔍 자세한 정보는 개발자 도구의 Console 탭을 확인하세요.\n` +
-        `(F12 키를 눌러 Console을 열 수 있습니다)`;
-
-    // 기존 notification 시스템 사용
-    if (typeof showNotification === 'function') {
-        showNotification(
-            `API 응답 오류 - Console 확인 필요 (${errorCount}개 오류)`,
-            'error'
-        );
-    }
-
-    // 추가로 alert도 표시 (간단한 버전)
-    alert(message);
+    
+    // 개발 중 스펙 불일치로 인한 반복적인 alert 노출을 방지하기 위해
+    // 화면 알림 처리(alert, showNotification)를 제거하고 콘솔 로그만 유지합니다.
+    console.warn(`[스펙 검증 경고] ${endpointKey} 엔드포인트의 응답이 spec과 다릅니다. 콘솔 상단의 상세 에러 로그를 확인해주세요 (${errorCount}개 불일치).`);
 }
