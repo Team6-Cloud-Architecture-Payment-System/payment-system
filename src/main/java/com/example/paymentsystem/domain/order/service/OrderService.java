@@ -7,8 +7,8 @@ import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.order.dto.*;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderItem;
-import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
+import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import com.example.paymentsystem.domain.product.entity.Product;
 import com.example.paymentsystem.domain.product.entity.ProductStatus;
 import com.example.paymentsystem.domain.product.repository.ProductRepository;
@@ -31,6 +31,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final PointHistoryService pointHistoryService;
 
     // 주문 생성
     @Transactional
@@ -179,8 +180,7 @@ public class OrderService {
     private void confirmAndReward(Order order) {
         order.confirm();
 
-        // TODO: 주문 확정 시 포인트 지급 로직 연결
-
+        // 주문 확정 시 포인트 지급 로직 연결
+        pointHistoryService.earnPoint(order.getUser(), order);
     }
-    // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
 }
