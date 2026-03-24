@@ -62,6 +62,8 @@ public class SecurityConfig {
 
                         // Public API 엔드포인트 허용
                         .requestMatchers("/api/public/**").permitAll()
+                        //Webhook 수신 엔드포인트 허용
+                        .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
 
                         // 나머지 전부 인증 필요
                         .anyRequest().authenticated()

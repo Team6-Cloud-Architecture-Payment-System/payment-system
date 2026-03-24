@@ -8,7 +8,6 @@ import com.example.paymentsystem.domain.order.repository.OrderRepository;
 import com.example.paymentsystem.domain.order.service.OrderService;
 import com.example.paymentsystem.domain.payment.dto.*;
 import com.example.paymentsystem.domain.payment.entity.Payment;
-import com.example.paymentsystem.domain.payment.entity.Webhook;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import com.example.paymentsystem.domain.payment.repository.WebhookRepository;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
@@ -105,31 +104,5 @@ public class PaymentService {
     private void handleSecurityIssue(String impUid, String token) {
         // 환불 API 호출
         log.error("err: 금액 불일치 imp_uid: {}", impUid);
-    }
-
-    @Transactional
-    public void receiveWebhook(WebhookRequestDto dto,String webhookId) {
-
-        //webhook_id 중복 체크
-        if(webhookRepository.existsByWebhookId(webhookId)){
-            return;
-        }
-
-        //        중복이면 → 그냥 리턴
-//        중복 아니면 → 웹훅 테이블에 RECEIVED로 저장
-//        paymentId로 PortOne 결제 조회
-//        결제 확정 처리
-//        웹훅 테이블 상태 → PROCESSED 업데이트
-
-        //이미 처리된 paymentId인 경우
-        if(webhookRepository.existsByPaymentId(dto.data().paymentId())){
-            return;
-        }
-
-        // 정적 팩토리 메서드로 객체 생성
-        Webhook webhook = Webhook.of(dto,webhookId);
-
-        // 저장
-        webhookRepository.save(webhook);
     }
 }

@@ -4,6 +4,7 @@ import com.example.paymentsystem.common.dto.ApiResponse;
 import com.example.paymentsystem.domain.payment.dto.*;
 import com.example.paymentsystem.domain.payment.service.PaymentService;
 import com.example.paymentsystem.domain.payment.service.PortOneService;
+import com.example.paymentsystem.domain.payment.service.WebhookService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,17 +22,18 @@ import org.springframework.web.bind.annotation.RestController;
 public class PaymentController {
     private final PaymentService paymentService;
     private final PortOneService portOneService;
+    private final WebhookService webhookService;
 
     @PostMapping("/api/payments/webhook")
     public ResponseEntity<Void> webhook(
-            @RequestHeader("webhook-id") String webhookId,
+            @RequestHeader(value="webhook-id", required = false) String webhookId,
             @RequestBody WebhookRequestDto request
     ) {
         //포트원연동 후 보내준 데이터 확인하기
         log.info("webhookId: {}", webhookId);
         log.info("request: {}", request);
 
-        paymentService.receiveWebhook(request, webhookId);
+        webhookService.receiveWebhook(request, webhookId);
 
         return ResponseEntity.ok().build();
 

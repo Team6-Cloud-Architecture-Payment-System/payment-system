@@ -16,6 +16,7 @@ public enum ErrorCode {
     ALREADY_PAID(HttpStatus.BAD_REQUEST,"이미 완료된 결제입니다."),
     PAYMENT_FORGERY_DETECTED(HttpStatus.CONFLICT, "결제 금액 위변조가 감지되었습니다."),
     PAYMENT_NOT_COMPLETED(HttpStatus.valueOf(422), "결제가 완료되지 않은 상태입니다."),
+    WEBHOOK_PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "웹훅 처리 중 결제 정보를 찾을 수 없습니다."),
     // auth
     DUPLICATED_EMAIL(HttpStatus.BAD_REQUEST, "이미 가입된 이메일 입니다."),
     DUPLICATED_PHONE_NUMBER(HttpStatus.BAD_REQUEST, "이미 가입된 전화번호 입니다."),
