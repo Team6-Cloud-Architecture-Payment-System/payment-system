@@ -16,11 +16,11 @@
                 <div class="cart-modal-content">
                     <button class="cart-modal-close" onclick="toggleCartModal()">×</button>
                     <h3 style="margin-bottom: 1.5rem; font-family: 'Righteous', display; font-size: 1.8rem; text-transform: uppercase;">🛒 장바구니</h3>
-                    
+
                     <div id="cart-items" style="margin-bottom: 1rem; max-height: 40vh; overflow-y: auto;">
                         <p style="color: var(--text-secondary); text-align: center; padding: 1rem 0;">장바구니가 비어 있습니다.</p>
                     </div>
-                    
+
                     <div class="cart-total" style="margin-top: 1rem; padding-top: 1rem; border-top: 3px solid var(--border);">
                         <span>총 상품 금액:</span>
                         <span id="cart-total">₩0</span>
@@ -96,10 +96,10 @@
                 if (!validateApiResponse('get-current-user', result)) {
                     throw new Error('API 응답 형식이 올바르지 않습니다.');
                 }
-                
+
                 // data 객체가 래핑된 경우 추출
                 currentUser = result?.data || result || {};
-                
+
                 if (currentUser && currentUser.point !== undefined) {
                     document.getElementById('current-point-display').textContent = `${currentUser.point.toLocaleString()} P`;
                 }
@@ -208,11 +208,11 @@
 
             input.value = qty;
             cart[productId] = qty;
-            
+
             if (delta > 0 && qty > 0) {
                 animateCartBadge();
             }
-            
+
             updateCartSummary();
         }
 
@@ -329,10 +329,10 @@
             }
 
             const orderBtn = document.getElementById('create-order-btn');
-            
+
             // 총 금액이 존재하지만 포인트 차감후 최종 금액이 1원~999원인 경우 막음
             if (finalAmount > 0 && finalAmount < 1000 && totalQty > 0) {
-                warningMsg.textContent = '❌ 실결제금액이 1원~999원일 경우 결제가 불가능합니다. 포인트를 조절해주세요.';
+                warningMsg.textContent = '❌ 실결제금액이 1000원 미만일 경우 결제가 불가능합니다.';
                 if (orderBtn) {
                     orderBtn.disabled = true;
                     orderBtn.style.opacity = '0.5';
@@ -396,7 +396,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             // API 목록 동적 생성 (비동기)
             populateApiList();
-            
+
             // Inject Cart Button into Navbar
             const navbarActions = document.querySelector('.navbar-actions');
             if (navbarActions) {

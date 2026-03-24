@@ -265,7 +265,7 @@ api:
           - name: name
             type: string
             required: true
-          - name: phone
+          - name: phoneNumber
             type: string
             required: true
       response:
@@ -277,7 +277,7 @@ api:
             - name: data
               type: object
               required: true
-              description: "{ id, email, name, phone }"
+              description: "{ id, email, name, phoneNumber }"
             - name: message
               type: string
               required: true
