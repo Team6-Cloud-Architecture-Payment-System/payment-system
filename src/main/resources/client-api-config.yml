@@ -84,17 +84,11 @@ api:
 
     confirm-order:
       url: /api/orders/{orderId}/confirm
-      method: POST
+      method: PATCH
       description: 주문 확정(상태 변경)
       pathParams:
         - name: orderId
           description: 주문 ID
-      request:
-        fields:
-          - name: status
-            type: string
-            required: true
-            description: 예) ORDER_CONFIRMED
       response:
         body:
           fields:
@@ -102,9 +96,9 @@ api:
               type: boolean
               required: true
             - name: data
-              type: object
+              type: string
               required: true
-              description: "{ orderId, orderStatus, confirmedAt }"
+              description: "주문 확정 성공 메시지"
             - name: message
               type: string
               required: true
