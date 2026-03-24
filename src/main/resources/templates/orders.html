@@ -242,6 +242,13 @@
                     return;
                 }
 
+                // 결제 시작 API(/api/orders/{orderId}/payments)는 Long orderId 기준으로만 호출
+                const paymentOrderId = order.orderId ?? orderId;
+                if (paymentOrderId === undefined || paymentOrderId === null || Number.isNaN(Number(paymentOrderId))) {
+                    showNotification('⚠️ 결제에 필요한 orderId가 없어 요청할 수 없습니다', 'error');
+                    return;
+                }
+
                 // 0원이 falsy값으로 무시되지 않고 0으로 평가되도록 nullish coalescing(??) 사용
                 const finalTotalAmount = Number(order.paymentPrice ?? totalAmount);
 
@@ -249,7 +256,7 @@
                     try {
                         // 1. 서버에 전액 포인트(0원) 결제 시작 요청 (DB에 결제 내역 PENDING 정보 생성)
                         const createResult = await makeApiRequest('create-payment', {
-                            pathParams: { orderId: orderId },
+                            pathParams: { orderId: Number(paymentOrderId) },
                             body: { payment_price: 0 }
                         });
                         
@@ -276,7 +283,7 @@
 
                 try {
                     const paymentData = {
-                        orderId: String(orderId),
+                        orderId: String(paymentOrderId),
                         orderName: `주문 ${order.orderNumber || orderId}`,
                         totalAmount: finalTotalAmount,
                         currency: 'KRW',
@@ -318,7 +325,7 @@
                 const status = order.status || order.orderStatus;
 
                 if (status === 'PENDING' || status === '결제 대기') {
-                    return `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="payOrder('${orderUid}', ${finalAmountNum})">
+                    return `<button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="payOrder('${order.orderId || orderUid}', ${finalAmountNum})">
                                 💳 결제하기
                             </button>`;
                 }
