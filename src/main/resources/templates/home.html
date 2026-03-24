@@ -32,8 +32,9 @@
                             <span id="current-point-display">0 P</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="number" id="use-point-input" class="form-input" style="flex: 1; padding: 0.5rem;" value="0" min="0" step="100" onchange="validatePointInput()">
+                            <input type="number" id="use-point-input" class="form-input" style="flex: 1; padding: 0.5rem;" value="0" min="0" step="1000" onchange="validatePointInput()">
                             <span style="font-weight: bold;">P 사용</span>
+                            <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-width: 2px; font-weight: bold; border-radius: var(--radius-sm);" onclick="useAllPoints()">전액사용</button>
                         </div>
                     </div>
 
@@ -42,7 +43,7 @@
                         <span id="final-amount">₩0</span>
                     </div>
 
-                    <button class="btn btn-primary" onclick="createOrder()" style="width: 100%; margin-top: 1.5rem; font-size: 1.2rem;">
+                    <button id="create-order-btn" class="btn btn-primary" onclick="createOrder()" style="width: 100%; margin-top: 1.5rem; font-size: 1.2rem;">
                         📦 주문 생성
                     </button>
                 </div>
@@ -229,20 +230,45 @@
             return total;
         }
 
+        // 전액 사용 버튼 클릭
+        function useAllPoints() {
+            let currentTotal = calculateTotal();
+            if (currentTotal === 0) return;
+
+            const maxPoint = currentUser && currentUser.point !== undefined ? currentUser.point : 0;
+
+            if (maxPoint >= currentTotal) {
+                // 보유 포인트가 총 결제금액보다 크거나 같으면 전액 사용(0원 결제) -> 1000원 단위 제약 예외
+                document.getElementById('use-point-input').value = currentTotal;
+                updateCartSummary();
+            } else {
+                // 보유 포인트가 부족하면 1000 단위로 사용하되, 잔액이 1~999원 사이로 남지 않게 조정
+                let usePoint = Math.floor(maxPoint / 1000) * 1000;
+                const remainder = currentTotal - usePoint;
+                if (remainder > 0 && remainder < 1000) {
+                    usePoint = Math.max(0, Math.floor((currentTotal - 1000) / 1000) * 1000);
+                }
+                document.getElementById('use-point-input').value = usePoint;
+                updateCartSummary();
+            }
+        }
+
         function validatePointInput() {
             const input = document.getElementById('use-point-input');
             let value = parseInt(input.value) || 0;
             const maxPoint = currentUser && currentUser.point !== undefined ? currentUser.point : 0;
+            let currentTotal = calculateTotal();
 
-            // 100 단위로 조정
-            value = Math.floor(value / 100) * 100;
+            if (value === currentTotal && maxPoint >= currentTotal) {
+                // 전액 사용 시 1000 단위 예외 허용 (0원 결제)
+            } else {
+                // 1000 단위로 조정
+                value = Math.floor(value / 1000) * 1000;
+            }
 
             if (value < 0) value = 0;
-            if (value > maxPoint) value = Math.floor(maxPoint / 100) * 100;
-
-            // 총 금액보다 클 수 없음
-            let currentTotal = calculateTotal();
-            if (value > currentTotal) value = Math.floor(currentTotal / 100) * 100;
+            if (value > maxPoint && value !== currentTotal) value = Math.floor(maxPoint / 1000) * 1000;
+            if (value > currentTotal) value = Math.floor(currentTotal / 1000) * 1000;
 
             input.value = value;
             updateCartSummary();
@@ -280,13 +306,46 @@
             let usePoint = parseInt(document.getElementById('use-point-input').value) || 0;
             // validate point usage just in case total dropped below used points
             if (usePoint > total) {
-                 usePoint = Math.floor(total / 100) * 100;
+                 usePoint = Math.floor(total / 1000) * 1000;
                  document.getElementById('use-point-input').value = usePoint;
             }
 
             const finalAmount = total - usePoint;
             if (finalAmountSpan) {
                 finalAmountSpan.textContent = `₩${finalAmount.toLocaleString()}`;
+            }
+
+            // 잔액 1~999원 결제 방지 로직 (PG 한도 문제 회피 전략 1)
+            let warningMsg = document.getElementById('point-warning-msg');
+            if (!warningMsg) {
+                warningMsg = document.createElement('div');
+                warningMsg.id = 'point-warning-msg';
+                warningMsg.style.color = 'var(--danger)';
+                warningMsg.style.fontSize = '0.85rem';
+                warningMsg.style.marginTop = '0.5rem';
+                warningMsg.style.fontWeight = 'bold';
+                const inputContainer = document.getElementById('use-point-input').parentElement.parentElement;
+                inputContainer.appendChild(warningMsg);
+            }
+
+            const orderBtn = document.getElementById('create-order-btn');
+            
+            // 총 금액이 존재하지만 포인트 차감후 최종 금액이 1원~999원인 경우 막음
+            if (finalAmount > 0 && finalAmount < 1000 && totalQty > 0) {
+                warningMsg.textContent = '❌ 실결제금액이 1원~999원일 경우 결제가 불가능합니다. 포인트를 조절해주세요.';
+                if (orderBtn) {
+                    orderBtn.disabled = true;
+                    orderBtn.style.opacity = '0.5';
+                    orderBtn.style.cursor = 'not-allowed';
+                }
+            } else {
+                warningMsg.textContent = '';
+                if (orderBtn) {
+                    const isDisabled = totalQty === 0;
+                    orderBtn.disabled = isDisabled;
+                    orderBtn.style.opacity = isDisabled ? '0.5' : '1';
+                    orderBtn.style.cursor = isDisabled ? 'not-allowed' : 'pointer';
+                }
             }
 
             // Update Badge Count
