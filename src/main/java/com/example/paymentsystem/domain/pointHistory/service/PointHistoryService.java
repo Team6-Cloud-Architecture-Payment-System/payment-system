@@ -4,17 +4,15 @@ import com.example.paymentsystem.common.exception.ErrorCode;
 import com.example.paymentsystem.common.exception.ServiceException;
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
-import com.example.paymentsystem.domain.membership.entity.MembershipTier;
-import com.example.paymentsystem.domain.membership.entity.UserMembership;
 import com.example.paymentsystem.domain.membership.repository.MembershipTierRepository;
 import com.example.paymentsystem.domain.membership.repository.UserMembershipRepository;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
-import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import com.example.paymentsystem.domain.pointHistory.dto.GetPointTransactionHistory;
+import com.example.paymentsystem.domain.pointHistory.dto.PointHistorySummaryResponse;
 import com.example.paymentsystem.domain.pointHistory.entity.PointHistory;
 import com.example.paymentsystem.domain.pointHistory.entity.Type;
 import com.example.paymentsystem.domain.pointHistory.repository.PointHistoryRepository;
@@ -23,6 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -36,13 +36,6 @@ public class PointHistoryService {
     private final PaymentRepository paymentRepository;
 
     private static final Long MIN_USE_POINT = 1000L; // 예: 1000원부터 사용 가능
-//    @Transactional(readOnly = true)
-//    public GetMyPointHistoryResponse getMyPoint(Long userId) {
-//        User user = userRepository.findById(userId).orElseThrow(
-//                () -> new IllegalArgumentException("유저를 찾지 못했습니다.")
-//        );
-//        return new GetMyPointHistoryResponse(user.getId(), user.getPoint());
-//    }
 
     /*현재 포인트 잔액 계산(합산)
 
@@ -69,7 +62,8 @@ public class PointHistoryService {
         Double rewardRate = membershipTierRepository.findRewardRateByUserId(user.getId())
                 .orElseThrow(() -> new ServiceException(ErrorCode.MEMBERSHIP_NOT_FOUND));
         // rewardRate는 Double 타입이므로, long타입으로 형변환 후 받아줌
-        Long earnPrice = (long) Math.floor(order.getTotalPrice() * rewardRate);
+        Long earnPrice = (long) Math.floor(order.getPaymentPrice() * rewardRate);
+        // order.getTotalPrice() -> order.getPaymentPrice()로 변경
 
         PointHistory earnedPoint = new PointHistory(earnPrice, Type.EARNED, user, order);
 
@@ -80,23 +74,27 @@ public class PointHistoryService {
 
     // 포인트 사용 (결제 시)
     @Transactional
-    public void usePoint(Long userId, Order order, Long price) {
-        if (price < MIN_USE_POINT) {
+    public void usePoint(Long userId, Order order) {
+
+        Long usedPoint = order.getUsedPoint();
+
+        if (usedPoint < MIN_USE_POINT) {
             throw new ServiceException(ErrorCode.POINT_BELOW_MINIMUM);
         }
 
         // 비관적 락을 통해 유저 정보 재조회 (동시성 방지)
         User user = userRepository.findByIdWithPessimisticLock(userId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.USER_NOT_FOUND));
-        // 잔액이 부족한지 체크
-        if (user.getPoint() < price) {
+
+        // 사용할 수 있는 포인트가 있는지 체크
+        if (user.getPoint() < usedPoint) {
             throw new ServiceException(ErrorCode.INSUFFICIENT_POINT);
         }
 
-        PointHistory spentPoint = new PointHistory(-price, Type.SPENT, user, order);
+        PointHistory spentPoint = new PointHistory(-usedPoint, Type.SPENT, user, order);
         pointHistoryRepository.save(spentPoint);
 
-        user.updatePoint(-price);
+        user.updatePoint(-usedPoint);
     }
 
     // 포인트 복구
@@ -163,12 +161,25 @@ public class PointHistoryService {
 
     // 포인트 거래 내역 조회
     @Transactional(readOnly = true)
-    public Page<GetPointTransactionHistory> getPointTransactionHistory(Long userId, Pageable pageable) {
+    public GetPointTransactionHistory getPointTransactionHistory(Long userId, Pageable pageable) {
+
         User user = userRepository.findById(userId).orElseThrow(
                 () -> new ServiceException(ErrorCode.USER_NOT_FOUND)
         );
-        return pointHistoryRepository.findAllByUser(user, pageable);
 
+        Page<PointHistory> page = pointHistoryRepository.findAllByUser(user, pageable);
+
+        List<PointHistorySummaryResponse> pointHistoryList = page.getContent().stream()
+                .map(PointHistorySummaryResponse::new)
+                .toList();
+
+        return new GetPointTransactionHistory(
+                pointHistoryList,
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
     }
 }
 
