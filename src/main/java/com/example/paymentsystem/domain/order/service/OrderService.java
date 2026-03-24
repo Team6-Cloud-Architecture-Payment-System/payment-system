@@ -8,6 +8,9 @@ import com.example.paymentsystem.domain.order.dto.*;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderItem;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
+import com.example.paymentsystem.domain.payment.entity.Payment;
+import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
+import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import com.example.paymentsystem.domain.product.entity.Product;
 import com.example.paymentsystem.domain.product.entity.ProductStatus;
@@ -32,6 +35,8 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final PointHistoryService pointHistoryService;
+    private final PaymentRepository paymentRepository;
+
 
     // 주문 생성
     @Transactional
@@ -146,8 +151,14 @@ public class OrderService {
         Order order = orderRepository.findByIdAndUserId(orderId, userId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
 
+        // 성공한 결제(PAID) 조회
+        Payment payment = paymentRepository.findByOrderId(order.getId()).stream()
+                .filter(p -> p.getPaymentStatus() == PaymentStatus.PAID)
+                .findFirst()
+                .orElseThrow(() -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND));
+
         // 주문 상세 응답 반환
-        return OrderDetailResponse.from(order);
+        return OrderDetailResponse.of(order, payment.getPaymentId());
     }
 
     // 주문 확정 (수동)

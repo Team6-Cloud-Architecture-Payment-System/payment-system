@@ -10,6 +10,7 @@ public record OrderDetailResponse (
 
         Long orderId,
         String orderNumber,
+        String paymentId,
         Long totalPrice,
         Long usedPoint,
         Long paymentPrice,
@@ -17,10 +18,11 @@ public record OrderDetailResponse (
         LocalDateTime orderedCreatedAt,
         List<OrderItemDetail> orderItems
 ) {
-    public static OrderDetailResponse from(Order order) {
+    public static OrderDetailResponse of(Order order, String paymentId) {
         return new OrderDetailResponse(
                 order.getId(),
                 order.getOrderNumber(),
+                paymentId,
                 order.getTotalPrice(),
                 order.getUsedPoint(),
                 order.getPaymentPrice(),
