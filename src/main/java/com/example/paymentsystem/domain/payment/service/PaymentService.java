@@ -72,7 +72,9 @@ public class PaymentService {
                 .orElseThrow(() -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND));
 
         if (payment.getPaymentPrice() == 0) {
+            payment.stateUpdate(PaymentStatus.PAID);
             orderService.stockReduce(payment.getOrder());
+            orderService.completeOrder(payment.getOrder());
             return;
         }
 
@@ -96,6 +98,7 @@ public class PaymentService {
         // 6. 재고 차감
         payment.stateUpdate(PaymentStatus.PAID);
         orderService.stockReduce(payment.getOrder());
+        orderService.completeOrder(payment.getOrder());
     }
 
     private void handleSecurityIssue(String impUid, String token) {
