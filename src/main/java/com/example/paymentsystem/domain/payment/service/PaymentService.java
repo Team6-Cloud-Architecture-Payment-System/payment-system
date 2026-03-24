@@ -59,7 +59,7 @@ public class PaymentService {
                 order,
                 generatedPaymentId,
                 PaymentStatus.PENDING,
-                order.getTotalPrice()
+                order.getPaymentPrice()
         );
 
         return new PaymentTryResponse(paymentRepository.save(saved));
@@ -68,16 +68,19 @@ public class PaymentService {
     @Transactional
     public void confirmPayment(String paymentId) {
 
-        // 1. 포트원 서버에서 실제 결제 내역 조회
-        PortOneVerificationResponseDto portOneData = portApiService.getVerifyPayment(paymentId);
-
-        // 2. 우리 DB에서 결제 시도 정보 조회
         Payment payment = paymentRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND));
 
+        if (payment.getPaymentPrice() == 0) {
+            orderService.stockReduce(payment.getOrder());
+            return;
+        }
+
+        PortOneVerificationResponseDto portOneData = portApiService.getVerifyPayment(paymentId);
+
         // 3. 중복 처리 방지 (이미 완료된 경우 예외)
         if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            throw new ServiceException(ErrorCode.ALREADY_PAID);
+            return;
         }
 
         // 4. 포트원 결제 상태 확인 (PAID 여부)
@@ -90,15 +93,9 @@ public class PaymentService {
             throw new ServiceException(ErrorCode.PAYMENT_FORGERY_DETECTED);
         }
 
-        Order order = payment.getOrder();
-
-        // 6. 상태 업데이트 및 비즈니스 로직 수행
+        // 6. 재고 차감
         payment.stateUpdate(PaymentStatus.PAID);
-        orderService.completeOrder(order);
-        orderService.confirmOrder(
-                order.getId(),
-                order.getUser().getId()
-        );
+        orderService.stockReduce(payment.getOrder());
     }
 
     private void handleSecurityIssue(String impUid, String token) {

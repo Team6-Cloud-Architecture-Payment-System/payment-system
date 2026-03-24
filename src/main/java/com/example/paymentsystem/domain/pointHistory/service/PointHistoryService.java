@@ -60,7 +60,7 @@ public class PointHistoryService {
         }
         // 현재 등급에 해당되는 등급 정책 조회
         Double rewardRate = membershipTierRepository.findRewardRateByUserId(user.getId())
-                .orElseThrow(() -> new ServiceException(ErrorCode.MEMBERSHIP_NOT_FOUND));
+                .orElseThrow(() ->  new ServiceException(ErrorCode.MEMBERSHIP_NOT_FOUND));
         // rewardRate는 Double 타입이므로, long타입으로 형변환 후 받아줌
         Long earnPrice = (long) Math.floor(order.getPaymentPrice() * rewardRate);
         // order.getTotalPrice() -> order.getPaymentPrice()로 변경
