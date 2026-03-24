@@ -27,7 +27,7 @@ public class PaymentService {
     private final OrderService orderService;
 
     @Transactional
-    public PaymentTryResponse tryPayment(Long orderId, PaymentTryRequest request) {
+    public PaymentTryResponse tryPayment(Long orderId) {
 
         //1. 존재 하는 주문인지
 
@@ -35,16 +35,11 @@ public class PaymentService {
                 () -> new IllegalStateException("주문을 찾을 수 없습니다.")
         );
 
-        //2. 주문 금액이 결제 금액과 동일한지
-        if (order.getTotalPrice().equals(request.paymentPrice())) {
-            throw new IllegalStateException("주문 금액이 일치하지 않습니다.");
-        }
-
         if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_PENDING)) {
             throw new IllegalStateException("결제할 수 없는 주문 상태입니다.");
         }
 
-        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.WAIT)) {
+        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PENDING)) {
             throw new IllegalStateException("이미 결제 진행 중인 주문입니다.");
         }
 
@@ -57,8 +52,8 @@ public class PaymentService {
         Payment saved = new Payment(
                 order,
                 generatedPaymentId,
-                PaymentStatus.WAIT,
-                request.paymentPrice());
+                PaymentStatus.PENDING,
+                order.getTotalPrice());
 
         return new PaymentTryResponse(paymentRepository.save(saved));
     }
@@ -88,11 +83,14 @@ public class PaymentService {
             throw new IllegalStateException("결제 금액 위변조가 감지되었습니다.");
         }
 
+        Order order = payment.getOrder();
+
         // 6. 상태 업데이트 및 비즈니스 로직 수행
         payment.stateUpdate(PaymentStatus.PAID);
+        orderService.completeOrder(order);
         orderService.confirmOrder(
-                payment.getOrder().getId(),
-                payment.getOrder().getUser().getId());
+                order.getId(),
+                order.getUser().getId());
     }
 
     private void handleSecurityIssue(String impUid, String token) {

@@ -42,7 +42,7 @@ public class PaymentController {
             @PathVariable Long orderId,
             @RequestBody PaymentTryRequest request
             ) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(paymentService.tryPayment(orderId, request)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(paymentService.tryPayment(orderId)));
     }
 
     @PostMapping("/api/payments/{paymentId}/confirm")

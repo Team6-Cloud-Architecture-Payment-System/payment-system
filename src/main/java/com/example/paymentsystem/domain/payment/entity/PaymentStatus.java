@@ -1,7 +1,7 @@
 package com.example.paymentsystem.domain.payment.entity;
 
 public enum PaymentStatus {
-    WAIT("대기"),
+    PENDING("대기"),
     PAID("결제 완료"),
     FAIL("실패"),
     REFUNDED("환불 완료");
