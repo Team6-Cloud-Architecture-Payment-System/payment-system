@@ -24,7 +24,7 @@ public class RefundController {
     // 환불 요청
     @PostMapping("/payments/{paymentId}/refunds")
     public ResponseEntity<ApiResponse<CreateRefundResponse>> createRefundRequest(
-            @PathVariable Long paymentId,
+            @PathVariable String paymentId,
             @Valid @RequestBody CreateRefundRequest request,
             @AuthenticationPrincipal Long userId) {
         return ResponseEntity.status(HttpStatus.CREATED)
