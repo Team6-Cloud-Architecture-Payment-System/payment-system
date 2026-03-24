@@ -189,4 +189,17 @@ public class OrderService {
     public void completeOrder(Order order) {
         order.complete();
     }
+
+    @Transactional
+    public void stockReduce(Order order) {
+        // 1. 주문 항목 가져옴
+        List<OrderItem> orderItems = order.getOrderItems();
+
+        for (OrderItem item : orderItems) {
+            Product product = productRepository.findById(item.getProductId())
+                    .orElseThrow(() -> new ServiceException(ErrorCode.PRODUCT_NOT_FOUND));
+
+            product.removeStock(item.getQuantity());
+        }
+    }
 }
