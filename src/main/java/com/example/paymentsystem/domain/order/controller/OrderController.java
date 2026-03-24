@@ -5,7 +5,6 @@ import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
 import com.example.paymentsystem.domain.order.dto.OrderDetailResponse;
 import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
 import com.example.paymentsystem.domain.order.service.OrderService;
-import com.sun.security.auth.UserPrincipal;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

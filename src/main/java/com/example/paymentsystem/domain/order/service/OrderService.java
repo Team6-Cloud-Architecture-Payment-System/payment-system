@@ -7,8 +7,8 @@ import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.order.dto.*;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderItem;
-import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
+import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import com.example.paymentsystem.domain.product.entity.Product;
 import com.example.paymentsystem.domain.product.entity.ProductStatus;
 import com.example.paymentsystem.domain.product.repository.ProductRepository;
@@ -31,6 +31,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final PointHistoryService pointHistoryService;
 
     // 주문 생성
     @Transactional
@@ -50,6 +51,11 @@ public class OrderService {
 
         // 유저가 가진 포인트가 null이면 0으로 처리
         long userPoint = user.getPoint() == null ? 0L : user.getPoint();
+
+        // 포인트는 0원이거나 1000포인트 이상부터 사용 가능
+        if (usedPoint > 0 && usedPoint < 1000) {
+            throw new ServiceException(ErrorCode.INVALID_USED_POINT);
+        }
 
         // 유저가 포인트를 정말 그만큼 들고 있는지 확인
         if (userPoint < usedPoint) {
@@ -119,7 +125,7 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         // 주문 생성 응답 반환
-        return new CreateOrderResponse(savedOrder);
+        return CreateOrderResponse.from(savedOrder);
     }
 
 
@@ -141,7 +147,7 @@ public class OrderService {
                 .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
 
         // 주문 상세 응답 반환
-        return new OrderDetailResponse(order);
+        return OrderDetailResponse.from(order);
     }
 
     // 주문 확정 (수동)
@@ -174,10 +180,11 @@ public class OrderService {
     private void confirmAndReward(Order order) {
         order.confirm();
 
-        // TODO: 주문 확정 시 포인트 지급 로직 연결
+        // 주문 확정 시 포인트 지급 로직 연결
+        pointHistoryService.earnPoint(order.getUser(), order);
     }
-    // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
 
+    // 환불 : 환불에서 완료, 결제대기->주문완료 : 결제에서 완료
     @Transactional
     public void completeOrder(Order order) {
         order.complete();

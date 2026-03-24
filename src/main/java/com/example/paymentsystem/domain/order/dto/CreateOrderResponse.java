@@ -3,7 +3,6 @@ package com.example.paymentsystem.domain.order.dto;
 import com.example.paymentsystem.domain.order.entity.Order;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 public record CreateOrderResponse(
 
@@ -14,9 +13,9 @@ public record CreateOrderResponse(
         Long paymentPrice,
         String orderStatus,
         LocalDateTime orderedCreatedAt
-) {
-    public CreateOrderResponse(Order order) {
-        this(
+)  {
+    public static CreateOrderResponse from(Order order) {
+        return new CreateOrderResponse(
                 order.getId(),
                 order.getOrderNumber(),
                 order.getTotalPrice(),
