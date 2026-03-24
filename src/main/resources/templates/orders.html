@@ -189,7 +189,8 @@
                     // 포인트 정보 구성
                     const usedPoint = Number(order.usedPoint || 0) || 0;
                     const totalAmountNum = Number(order.totalAmount || order.totalPrice || 0) || 0;
-                    const finalAmountNum = Number(order.paymentPrice || totalAmountNum - usedPoint); // 혹은 서버가 제공하는 값
+                    // 0원이 falsy값으로 처리되지 않도록 ?? 연산자 사용
+                    const finalAmountNum = Number(order.paymentPrice ?? (totalAmountNum - usedPoint));
 
                     let pointsDisplay = '';
                     if (usedPoint > 0) {
@@ -241,7 +242,37 @@
                     return;
                 }
 
-                const finalTotalAmount = Number(order.paymentPrice || order.totalAmount || order.totalPrice) || totalAmount;
+                // 0원이 falsy값으로 무시되지 않고 0으로 평가되도록 nullish coalescing(??) 사용
+                const finalTotalAmount = Number(order.paymentPrice ?? totalAmount);
+
+                if (finalTotalAmount <= 0) {
+                    try {
+                        // 1. 서버에 전액 포인트(0원) 결제 시작 요청 (DB에 결제 내역 PENDING 정보 생성)
+                        const createResult = await makeApiRequest('create-payment', {
+                            pathParams: { orderId: orderId },
+                            body: { payment_price: 0 }
+                        });
+                        
+                        const createData = createResult?.data ?? {};
+                        const serverPaymentId = createData.paymentId || createData.paymentsId || createData.id;
+                        
+                        if (!serverPaymentId) {
+                            throw new Error('결제 ID를 생성하지 못했습니다.');
+                        }
+                        
+                        // 2. 포트원 창을 띄우지 않고 곧바로 결제 확정(검증) API 호출
+                        await makeApiRequest('confirm-payment', {
+                            pathParams: serverPaymentId
+                        });
+
+                        showNotification('전액 포인트 결제가 완료되었습니다!', 'success');
+                        await loadOrders();
+                    } catch (error) {
+                        console.error('Payment failed (0-won bypass):', error);
+                        showNotification(`전액 결제 처리 실패: ${error.message || '알 수 없는 오류'}`, 'error');
+                    }
+                    return;
+                }
 
                 try {
                     const paymentData = {
