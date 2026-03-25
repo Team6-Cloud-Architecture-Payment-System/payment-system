@@ -112,7 +112,7 @@ public class PaymentService {
     }
 
     // 성공 시 공통 로직 (포인트 차감 코드는 여기서 빠짐)
-        private void processPaymentSuccess(Payment payment) {
+    private void processPaymentSuccess(Payment payment) {
         Order order = payment.getOrder();
         // 결제 시도 시점에 포인트를 미리 깎기
         pointHistoryService.usePoint(order.getUser().getId(), order);
