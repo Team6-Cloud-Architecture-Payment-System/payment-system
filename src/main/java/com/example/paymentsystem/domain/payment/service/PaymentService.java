@@ -12,6 +12,7 @@ import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
 import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
+import com.example.paymentsystem.domain.refund.service.RefundService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,7 @@ public class PaymentService {
     private final OrderService orderService;
     private final PointHistoryService pointHistoryService;
     private final MembershipService membershipService;
+    private final RefundService refundService;
 
     @Transactional
     public PaymentTryResponse tryPayment(Long orderId) {
@@ -99,6 +101,11 @@ public class PaymentService {
             log.error("내부 비즈니스 로직 처리 중 에러 발생 - 보상 트랜잭션(결제 취소) 실행. ID: {}", paymentId, e);
             // 실제 돈은 빠져나갔는데 DB 처리가 실패했으므로 포트원에 취소 요청
             portApiService.cancelPayment(paymentId, new CancelRequestDto("내부 시스템 오류로 인한 결제 취소"));
+
+            payment.stateUpdate(PaymentStatus.FAIL);
+            payment.getOrder().updateStatus(OrderStatus.REFUNDED);
+
+            refundService.saveRefundHistory(payment, "내부 시스템 오류로 인한 환불");
             // 예외를 다시 던져서 전체 DB 트랜잭션(@Transactional) 롤백 유도
             throw e;
         }

@@ -15,12 +15,14 @@ import com.example.paymentsystem.domain.payment.service.PortOneService;
 import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import com.example.paymentsystem.domain.refund.dto.*;
 import com.example.paymentsystem.domain.refund.entity.Refund;
+import com.example.paymentsystem.domain.refund.entity.RefundStatus;
 import com.example.paymentsystem.domain.refund.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -163,5 +165,20 @@ public class RefundService {
         if (refundRepository.existsByPayment(payment)) {
             throw new ServiceException(ErrorCode.ALREADY_REFUNDED);
         }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveRefundHistory(Payment payment, String reason) {
+        // 트랜잭션이 롤백되어도 이 내용은 무조건 DB에 저장됨
+        Refund refund = new Refund(
+                payment,
+                payment.getPaymentPrice(),
+                reason,
+                RefundStatus.REFUND_COMPLETED
+        );
+        refundRepository.save(refund);
+
+        payment.stateUpdate(PaymentStatus.REFUNDED);
+        payment.getOrder().updateStatus(OrderStatus.REFUNDED);
     }
 }
