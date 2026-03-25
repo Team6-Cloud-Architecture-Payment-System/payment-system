@@ -104,8 +104,6 @@ public class PointHistoryService {
     @Transactional
     public void restorePoint(User user, Order order) {
 
-        // 호진 수정
-
         // 1. 복구된 내역이 이미 존재하는지 확인
         if (pointHistoryRepository.existsByOrderAndType(order, Type.RESTORED)) {
 //            throw new ServiceException(ErrorCode.ALREADY_RESTORED);
