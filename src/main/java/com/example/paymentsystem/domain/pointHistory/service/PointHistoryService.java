@@ -63,7 +63,7 @@ public class PointHistoryService {
         }
         // 현재 등급에 해당되는 등급 정책 조회
         Double rewardRate = membershipTierRepository.findRewardRateByUserId(user.getId())
-                .orElseThrow(() ->  new ServiceException(ErrorCode.MEMBERSHIP_NOT_FOUND));
+                .orElseThrow(() -> new ServiceException(ErrorCode.MEMBERSHIP_NOT_FOUND));
         // rewardRate는 Double 타입이므로, long타입으로 형변환 후 받아줌
         Long earnPrice = (long) Math.floor(order.getPaymentPrice() * rewardRate);
         // order.getTotalPrice() -> order.getPaymentPrice()로 변경
@@ -78,6 +78,10 @@ public class PointHistoryService {
     // 포인트 사용 (결제 시)
     @Transactional
     public void usePoint(Long userId, Order order) {
+
+        if (pointHistoryRepository.existsByOrderAndType(order, Type.SPENT)) {
+            return; // 이미 차감 이력이 있다면 중복 실행 방지
+        }
 
         Long usedPoint = order.getUsedPoint();
 
@@ -94,10 +98,16 @@ public class PointHistoryService {
             throw new ServiceException(ErrorCode.INSUFFICIENT_POINT);
         }
 
+        // 포인트 차감
+        user.updatePoint(-usedPoint);
+
+        // 이력 저장
         PointHistory spentPoint = new PointHistory(-usedPoint, Type.SPENT, user, order);
+
         pointHistoryRepository.save(spentPoint);
 
-        user.updatePoint(-usedPoint);
+        userRepository.saveAndFlush(user);
+
     }
 
     // 포인트 복구
