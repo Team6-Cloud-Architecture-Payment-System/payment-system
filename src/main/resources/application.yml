@@ -2,7 +2,7 @@ spring:
   application:
     name: payment-system
   profiles:
-    active: prod
+    active: local
 
   # 클라이언트 API 계약 설정 파일 import
   config:
