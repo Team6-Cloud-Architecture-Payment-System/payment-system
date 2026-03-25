@@ -89,15 +89,23 @@ public class PaymentService {
 
         // 5. 금액 검증 (DB 저장 금액 vs 포트원 실제 결제 금액)
         if (portOneData.getAmount().getTotal() != payment.getPaymentPrice()) {
+            portApiService.cancelPayment(paymentId, new CancelRequestDto("금액 불일치"));
             throw new ServiceException(ErrorCode.PAYMENT_FORGERY_DETECTED);
         }
 
-        // 검증 완료 후 공통 성공 로직 실행
-        processPaymentSuccess(payment);
+        try {
+            processPaymentSuccess(payment);
+        } catch (Exception e) {
+            log.error("내부 비즈니스 로직 처리 중 에러 발생 - 보상 트랜잭션(결제 취소) 실행. ID: {}", paymentId, e);
+            // 실제 돈은 빠져나갔는데 DB 처리가 실패했으므로 포트원에 취소 요청
+            portApiService.cancelPayment(paymentId, new CancelRequestDto("내부 시스템 오류로 인한 결제 취소"));
+            // 예외를 다시 던져서 전체 DB 트랜잭션(@Transactional) 롤백 유도
+            throw e;
+        }
     }
 
     // 성공 시 공통 로직 (포인트 차감 코드는 여기서 빠짐)
-    private void processPaymentSuccess(Payment payment) {
+        private void processPaymentSuccess(Payment payment) {
         Order order = payment.getOrder();
         // 결제 시도 시점에 포인트를 미리 깎기
         pointHistoryService.usePoint(order.getUser().getId(), order);
