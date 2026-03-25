@@ -39,9 +39,9 @@ public class TestDataInit implements ApplicationRunner {
         // 1. 등급 정책 데이터 먼저 주입
         if (membershipTierRepository.count() == 0) {
             membershipTierRepository.saveAll(List.of(
-                    new MembershipTier(0.01, "기본", MembershipName.NORMAL, 0L, 100000L),
-                    new MembershipTier(0.03, "우수", MembershipName.VIP, 100000L, 300000L),
-                    new MembershipTier(0.05, "최우수", MembershipName.VVIP, 300000L, null)
+                    new MembershipTier(0.01, "기본", MembershipName.NORMAL, 0L, 3000L),
+                    new MembershipTier(0.03, "우수", MembershipName.VIP, 3000L, 10000L),
+                    new MembershipTier(0.05, "최우수", MembershipName.VVIP, 10000L, null)
             ));
             log.info("멤버십 등급 정책 등록 완료");
         }

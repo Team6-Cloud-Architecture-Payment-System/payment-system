@@ -6,6 +6,7 @@ import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.membership.service.MembershipService;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
+import com.example.paymentsystem.domain.order.service.OrderService;
 import com.example.paymentsystem.domain.payment.dto.CancelRequestDto;
 import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
@@ -35,6 +36,7 @@ public class RefundService {
     private final UserRepository userRepository;
     private final MembershipService membershipService;
     private final PortOneService  portOneService;
+    private final OrderService orderService;
 
 
     @Transactional
@@ -59,8 +61,14 @@ public class RefundService {
         // 결제 상태 변경
         payment.stateUpdate(PaymentStatus.REFUNDED);
 
+        // 환불일 생성
+        payment.paymentRefundedAt(refund.getCreatedAt());
+
         // 주문 상태 변경
         payment.getOrder().updateStatus(OrderStatus.REFUNDED);
+
+        // 상품 재고 복구
+        orderService.stockAdd(payment.getOrder());
 
         // 포인트 복구 처리
         if (payment.getOrder().getUsedPoint() > 0) {
