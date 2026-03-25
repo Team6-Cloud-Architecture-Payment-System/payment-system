@@ -1,4 +1,7 @@
 spring:
+  config:
+    activate:
+      on-profile: prod
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -9,8 +12,6 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        # MySQL8Dialect로 설정하지 말고, MySQLDialect로 설정해두는 것이 에러 방지에 좋음
-        dialect: org.hibernate.dialect.MySQLDialect
         show_sql: false
   # Security 에러 방지용, RDS를 쓰더라도 H2 설정을 켜줌
   h2:
