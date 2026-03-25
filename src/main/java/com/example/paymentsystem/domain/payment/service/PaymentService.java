@@ -44,7 +44,13 @@ public class PaymentService {
         if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_PENDING)) {
             throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
         }
-
+        
+        if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PENDING)) {
+            paymentRepository.findByOrderAndPaymentStatus(order, PaymentStatus.PENDING)
+                // forEach -> List에서 하나씩 꺼내서 반복문을 돌림, p -> 찾아낸 Payment 객체
+                // 만약 PENDING 상태인 결제건이 3개면 3번 반복하여 각각의 상태를 FAIL로 바꿈
+                    .forEach(p -> p.stateUpdate(PaymentStatus.FAIL));
+        }
 
         // 4. 결제 식별자 생성 및 저장
         String generatedPaymentId = paymentIdGenerator.generate(String.valueOf(order.getUser().getId()));
@@ -97,16 +103,8 @@ public class PaymentService {
     private void processPaymentSuccess(Payment payment) {
         Order order = payment.getOrder();
         // 결제 시도 시점에 포인트를 미리 깎기
-        if (order.getUsedPoint() != null && order.getUsedPoint() > 0) {
-            pointHistoryService.usePoint(order.getUser().getId(), order);
-        }
-
+        pointHistoryService.usePoint(order.getUser().getId(), order);
         // 3.1 주문에 대한 PENDING 상태가 있는지 찾아보기
-        paymentRepository.findByOrderAndPaymentStatus(order, PaymentStatus.PENDING)
-                // forEach -> List에서 하나씩 꺼내서 반복문을 돌림, p -> 찾아낸 Payment 객체
-                // 만약 PENDING 상태인 결제건이 3개면 3번 반복하여 각각의 상태를 FAIL로 바꿈
-                .forEach(p -> p.stateUpdate(PaymentStatus.FAIL));
-
         payment.stateUpdate(PaymentStatus.PAID);
         orderService.stockReduce(payment.getOrder());
         orderService.completeOrder(payment.getOrder());
