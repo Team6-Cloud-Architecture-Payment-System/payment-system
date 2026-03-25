@@ -78,12 +78,16 @@ public class PointHistoryService {
     // 포인트 사용 (결제 시)
     @Transactional
     public void usePoint(Long userId, Order order) {
+        Long usedPoint = order.getUsedPoint();
+
+        if(usedPoint == 0) {
+            return;
+        }
 
         if (pointHistoryRepository.existsByOrderAndType(order, Type.SPENT)) {
             return; // 이미 차감 이력이 있다면 중복 실행 방지
         }
 
-        Long usedPoint = order.getUsedPoint();
 
         if (usedPoint < MIN_USE_POINT) {
             throw new ServiceException(ErrorCode.POINT_BELOW_MINIMUM);
