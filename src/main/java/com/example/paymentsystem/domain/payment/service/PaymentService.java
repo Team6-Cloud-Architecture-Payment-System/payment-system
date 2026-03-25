@@ -11,8 +11,11 @@ import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import com.example.paymentsystem.domain.payment.repository.WebhookRepository;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
+import com.example.paymentsystem.domain.pointHistory.repository.PointHistoryRepository;
+import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,7 @@ public class PaymentService {
     private final PaymentIdGenerator paymentIdGenerator;
     private final PortOneService portApiService;
     private final OrderService orderService;
+    private final PointHistoryService pointHistoryService;
 
     @Transactional
     public PaymentTryResponse tryPayment(Long orderId) {
@@ -40,21 +44,16 @@ public class PaymentService {
         if (!order.getOrderStatus().equals(OrderStatus.PAYMENT_PENDING)) {
             throw new ServiceException(ErrorCode.INVALID_ORDER_STATUS);
         }
-
-        // 3. 기존 PENDING 상태의 결제가 존재하면 FAIL 처리
+        
         if (paymentRepository.existsByOrderAndPaymentStatus(order, PaymentStatus.PENDING)) {
-            List<Payment> payments = paymentRepository.findByOrderId(orderId);
-            for (Payment payment : payments) {
-                payment.stateUpdate(PaymentStatus.FAIL);
-            }
+            paymentRepository.findByOrderAndPaymentStatus(order, PaymentStatus.PENDING)
+                // forEach -> List에서 하나씩 꺼내서 반복문을 돌림, p -> 찾아낸 Payment 객체
+                // 만약 PENDING 상태인 결제건이 3개면 3번 반복하여 각각의 상태를 FAIL로 바꿈
+                    .forEach(p -> p.stateUpdate(PaymentStatus.FAIL));
         }
 
-        // 4. PortOne에 보낼 paymentId 생성
-        String generatedPaymentId = paymentIdGenerator.generate(
-                String.valueOf(order.getUser().getId())
-        );
-
-        // 5. 결제 테이블에 저장 (주문 id, paymentId, 결제 상태(PENDING), 결제 금액)
+        // 4. 결제 식별자 생성 및 저장
+        String generatedPaymentId = paymentIdGenerator.generate(String.valueOf(order.getUser().getId()));
         Payment saved = new Payment(
                 order,
                 generatedPaymentId,
@@ -62,8 +61,9 @@ public class PaymentService {
                 order.getPaymentPrice()
         );
 
-        return new PaymentTryResponse(paymentRepository.save(saved));
+        return new PaymentTryResponse(paymentRepository.saveAndFlush(saved));
     }
+
 
     @Transactional
     public void confirmPayment(String paymentId) {
@@ -71,19 +71,19 @@ public class PaymentService {
         Payment payment = paymentRepository.findByPaymentId(paymentId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND));
 
+        // 중복 처리 방지
+        if (payment.getPaymentStatus() == PaymentStatus.PAID){
+            return;
+        }
+
+        // processPaymentSuccess 공통 로직을 만들어서 따로 뺌
         if (payment.getPaymentPrice() == 0) {
-            payment.stateUpdate(PaymentStatus.PAID);
-            orderService.stockReduce(payment.getOrder());
-            orderService.completeOrder(payment.getOrder());
+            processPaymentSuccess(payment);
             return;
         }
 
+        // 포트원 검증
         PortOneVerificationResponseDto portOneData = portApiService.getVerifyPayment(paymentId);
-
-        // 3. 중복 처리 방지 (이미 완료된 경우 예외)
-        if (payment.getPaymentStatus() == PaymentStatus.PAID) {
-            return;
-        }
 
         // 4. 포트원 결제 상태 확인 (PAID 여부)
         if (!portOneData.getStatus().equals(PaymentStatus.PAID.toString())) {
@@ -95,11 +95,22 @@ public class PaymentService {
             throw new ServiceException(ErrorCode.PAYMENT_FORGERY_DETECTED);
         }
 
-        // 6. 재고 차감
+        // 검증 완료 후 공통 성공 로직 실행
+        processPaymentSuccess(payment);
+    }
+
+    // 성공 시 공통 로직 (포인트 차감 코드는 여기서 빠짐)
+    private void processPaymentSuccess(Payment payment) {
+        Order order = payment.getOrder();
+        // 결제 시도 시점에 포인트를 미리 깎기
+        pointHistoryService.usePoint(order.getUser().getId(), order);
+        // 3.1 주문에 대한 PENDING 상태가 있는지 찾아보기
         payment.stateUpdate(PaymentStatus.PAID);
         orderService.stockReduce(payment.getOrder());
         orderService.completeOrder(payment.getOrder());
     }
+
+
 
     private void handleSecurityIssue(String impUid, String token) {
         // 환불 API 호출

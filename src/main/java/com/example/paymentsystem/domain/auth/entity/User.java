@@ -54,7 +54,7 @@ public class User extends BaseEntity {
         this.password = password;
         this.phoneNumber = phoneNumber;
         this.role = (role != null) ? role : UserRole.USER;
-        this.point = 1000000L;
+        this.point = 0L;
     }
 
     public void updatePoint(Long amount) {

@@ -1,9 +1,5 @@
 package com.example.paymentsystem.domain.pointHistory.dto;
 
-import com.example.paymentsystem.domain.pointHistory.entity.PointHistory;
-import com.example.paymentsystem.domain.pointHistory.entity.Type;
-
-import java.time.LocalDateTime;
 import java.util.List;
 
 // 최종 응답용 커스텀 DTO
