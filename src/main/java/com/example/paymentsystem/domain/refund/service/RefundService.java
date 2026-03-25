@@ -36,9 +36,9 @@ public class RefundService {
 
 
     @Transactional
-    public CreateRefundResponse createRefundRequest(Long paymentId, CreateRefundRequest request, Long userId) {
+    public CreateRefundResponse createRefundRequest(String paymentId, CreateRefundRequest request, Long userId) {
         // 결제 건이 존재하는지 확인
-        Payment payment = paymentRepository.findById(paymentId).orElseThrow(
+        Payment payment = paymentRepository.findByPaymentId(paymentId).orElseThrow(
                 () -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND)
         );
         validateRefundAuthorization(payment, userId);
