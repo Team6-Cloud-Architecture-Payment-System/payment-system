@@ -17,15 +17,18 @@ import com.example.paymentsystem.domain.pointHistory.entity.PointHistory;
 import com.example.paymentsystem.domain.pointHistory.entity.Type;
 import com.example.paymentsystem.domain.pointHistory.repository.PointHistoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PointHistoryService {
 
     private final PointHistoryRepository pointHistoryRepository;
@@ -44,7 +47,7 @@ public class PointHistoryService {
         return totalPoint == null ? 0L : totalPoint;
     }*/
 
-    // 포인트 적립 (결제 성공 시)
+    // 포인트 적립 (주문 완료시 시)
     @Transactional
     public void earnPoint(User user, Order order) {
         // 이미 적립된 내역이 있는지 확인
@@ -100,14 +103,25 @@ public class PointHistoryService {
     // 포인트 복구
     @Transactional
     public void restorePoint(User user, Order order) {
+
+        // 호진 수정
+
         // 1. 복구된 내역이 이미 존재하는지 확인
         if (pointHistoryRepository.existsByOrderAndType(order, Type.RESTORED)) {
-            throw new ServiceException(ErrorCode.ALREADY_RESTORED);
+//            throw new ServiceException(ErrorCode.ALREADY_RESTORED);
+            log.warn("이미 복구된 포인트 내역이 있습니다. Order ID: {}", order.getId());
+            return;
         }
         // 2. 실제 사용한 금액 꺼내오기
-        PointHistory spentPoint = pointHistoryRepository.findByOrderAndType(order, Type.SPENT).orElseThrow(
-                () -> new ServiceException(ErrorCode.POINT_HISTORY_NOT_FOUND)
-        );
+//        PointHistory spentPoint = pointHistoryRepository.findByOrderAndType(order, Type.SPENT).orElseThrow(
+//                () -> new ServiceException(ErrorCode.POINT_HISTORY_NOT_FOUND)
+//        );
+        Optional<PointHistory> spentPointOpt = pointHistoryRepository.findByOrderAndType(order, Type.SPENT);
+        if (spentPointOpt.isEmpty()) {
+            log.info("복구할 포인트 사용 내역이 없습니다. Order ID: {}", order.getId());
+            return;
+        }
+        PointHistory spentPoint = spentPointOpt.get();
 
         Long restoredPrice = spentPoint.getPoint() * -1;
         // 복구는 +(양수)값이 나와야 하는데, userPoint(포인트 사용)에서 -price로 값을 넘겨주고 있으니, -1을 곱해줌
@@ -130,19 +144,43 @@ public class PointHistoryService {
         if (pointHistoryRepository.existsByOrderAndType(order, Type.CANCELLED)) {
             return; // 이미 취소됨
         }
+        // 호진 수정
         // 거래 내역 확인
-        PointHistory earnedPoint = pointHistoryRepository.findByOrderAndType(order, Type.EARNED).orElseThrow(
-                () -> new ServiceException(ErrorCode.EARNED_POINT_NOT_FOUND)
-        );
-        PointHistory cancelledPoint = new PointHistory(
-                -earnedPoint.getPoint(),
+//        PointHistory earnedPoint = pointHistoryRepository.findByOrderAndType(order, Type.EARNED).orElseThrow(
+//                () -> new ServiceException(ErrorCode.EARNED_POINT_NOT_FOUND)
+//        );
+
+        Optional<PointHistory> earnedPointOpt = pointHistoryRepository.findByOrderAndType(order, Type.EARNED);
+
+        if (earnedPointOpt.isEmpty()) {
+            log.info("취소할 포인트 내역이 없습니다. Order ID: {}", order.getId());
+            return;
+        }
+
+        PointHistory earnedPoint = earnedPointOpt.get();
+
+//        PointHistory cancelledPoint = new PointHistory(
+//                -earnedPoint.getPoint(),
+//                Type.CANCELLED,
+//                user,
+//                order
+//        );
+//        pointHistoryRepository.save(cancelledPoint);
+//
+//        user.updatePoint(-earnedPoint.getPoint());
+
+        Long cancelPrice = earnedPoint.getPoint() * -1;
+
+        PointHistory cancelHistory = new PointHistory(
+                cancelPrice,
                 Type.CANCELLED,
                 user,
                 order
         );
-        pointHistoryRepository.save(cancelledPoint);
+        pointHistoryRepository.save(cancelHistory);
 
-        user.updatePoint(-earnedPoint.getPoint());
+        // 유저의 포인트 차감
+        user.updatePoint(cancelPrice);
     }
 
     // 포인트 소멸

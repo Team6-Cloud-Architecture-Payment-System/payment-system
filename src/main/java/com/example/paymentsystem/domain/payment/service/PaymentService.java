@@ -11,6 +11,8 @@ import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
 import com.example.paymentsystem.domain.payment.repository.WebhookRepository;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
+import com.example.paymentsystem.domain.pointHistory.repository.PointHistoryRepository;
+import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,7 +30,7 @@ public class PaymentService {
     private final PaymentIdGenerator paymentIdGenerator;
     private final PortOneService portApiService;
     private final OrderService orderService;
-
+    private final PointHistoryService  pointHistoryService;
     @Transactional
     public PaymentTryResponse tryPayment(Long orderId) {
 
@@ -97,6 +99,13 @@ public class PaymentService {
 
         // 6. 재고 차감
         payment.stateUpdate(PaymentStatus.PAID);
+
+        // 호진 추가
+        Order order = payment.getOrder();
+        if(order.getUsedPoint() > 0) {
+            pointHistoryService.usePoint(order.getUser().getId(), order);
+        }
+
         orderService.stockReduce(payment.getOrder());
         orderService.completeOrder(payment.getOrder());
     }

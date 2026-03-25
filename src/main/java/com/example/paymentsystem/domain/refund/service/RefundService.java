@@ -65,6 +65,13 @@ public class RefundService {
             pointHistoryService.restorePoint(user, payment.getOrder());
         }
 
+        // 호진 추가
+        // 포인트 적립 취소 처리
+        if(payment.getOrder().getUsedPoint() == null || payment.getOrder().getUsedPoint() > 0) {
+            pointHistoryService.cancelPoint(user, payment.getOrder());
+        }
+
+
         // 멤버십 등급 재계산
         membershipService.updateMembership(user.getId(), -payment.getPaymentPrice());
 
