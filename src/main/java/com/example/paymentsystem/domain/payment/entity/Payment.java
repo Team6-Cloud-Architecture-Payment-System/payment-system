@@ -40,4 +40,8 @@ public class Payment extends BaseEntity {
     public void stateUpdate(PaymentStatus paymentStatus){
         this.paymentStatus = paymentStatus;
     }
+
+    public void paymentRefundedAt(LocalDateTime refund_created_at) {
+        this.refund_created_at = refund_created_at;
+    }
 }

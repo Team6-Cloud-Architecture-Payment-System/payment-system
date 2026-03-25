@@ -2,6 +2,7 @@ package com.example.paymentsystem.domain.payment.service;
 
 import com.example.paymentsystem.common.exception.ErrorCode;
 import com.example.paymentsystem.common.exception.ServiceException;
+import com.example.paymentsystem.domain.membership.service.MembershipService;
 import com.example.paymentsystem.domain.order.entity.Order;
 import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
@@ -9,29 +10,24 @@ import com.example.paymentsystem.domain.order.service.OrderService;
 import com.example.paymentsystem.domain.payment.dto.*;
 import com.example.paymentsystem.domain.payment.entity.Payment;
 import com.example.paymentsystem.domain.payment.repository.PaymentRepository;
-import com.example.paymentsystem.domain.payment.repository.WebhookRepository;
 import com.example.paymentsystem.domain.payment.entity.PaymentStatus;
-import com.example.paymentsystem.domain.pointHistory.repository.PointHistoryRepository;
 import com.example.paymentsystem.domain.pointHistory.service.PointHistoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Or;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
     private final PaymentRepository paymentRepository;
-    private final WebhookRepository webhookRepository;
     private final OrderRepository orderRepository;
     private final PaymentIdGenerator paymentIdGenerator;
     private final PortOneService portApiService;
     private final OrderService orderService;
     private final PointHistoryService pointHistoryService;
+    private final MembershipService membershipService;
 
     @Transactional
     public PaymentTryResponse tryPayment(Long orderId) {
@@ -68,10 +64,11 @@ public class PaymentService {
     @Transactional
     public void confirmPayment(String paymentId) {
 
-        Payment payment = paymentRepository.findByPaymentId(paymentId)
+        //비관적락 적용 동시 접근 제한
+        Payment payment = paymentRepository.findByPaymentIdWithLock(paymentId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.PAYMENT_NOT_FOUND));
 
-        // 중복 처리 방지
+        // 멱등성 체크하여 중복 처리 방지
         if (payment.getPaymentStatus() == PaymentStatus.PAID){
             return;
         }
@@ -108,6 +105,10 @@ public class PaymentService {
         payment.stateUpdate(PaymentStatus.PAID);
         orderService.stockReduce(payment.getOrder());
         orderService.completeOrder(payment.getOrder());
+
+        //멤버십티어 총결제금액 업데이트 로직
+        membershipService.updateMembership(order.getUser().getId(), payment.getPaymentPrice());
+
     }
 
 
