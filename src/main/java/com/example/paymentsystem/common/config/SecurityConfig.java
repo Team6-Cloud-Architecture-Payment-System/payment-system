@@ -65,6 +65,9 @@ public class SecurityConfig {
                         //Webhook 수신 엔드포인트 허용
                         .requestMatchers(HttpMethod.POST, "/api/payments/webhook").permitAll()
 
+                        // ALB 상태 검사용 경로 허용
+                        .requestMatchers("/").permitAll()
+
                         // 나머지 전부 인증 필요
                         .anyRequest().authenticated()
 

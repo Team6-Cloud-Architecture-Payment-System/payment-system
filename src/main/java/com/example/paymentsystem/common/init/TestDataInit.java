@@ -56,7 +56,6 @@ public class TestDataInit implements ApplicationRunner {
                 // 가입 후 다시 조회해서 객체를 확보합니다.
                 adminUser = userRepository.findByEmail(email).orElseThrow();
 
-                // 호진 추가
                 adminUser.updatePoint(1000000L); // User 엔티티에 포인트를 수정하는 메서드가 있다고 가정
                 userRepository.save(adminUser);
                 log.info("테스트 유저에게 1,000,000 포인트를 지급했습니다.");
