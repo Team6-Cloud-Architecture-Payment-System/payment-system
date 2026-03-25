@@ -16,6 +16,7 @@ import com.example.paymentsystem.domain.refund.dto.*;
 import com.example.paymentsystem.domain.refund.entity.Refund;
 import com.example.paymentsystem.domain.refund.repository.RefundRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RefundService {
 
     private final RefundRepository refundRepository;
@@ -76,13 +78,17 @@ public class RefundService {
         membershipService.updateMembership(user.getId(), -payment.getPaymentPrice());
 
         // PortOne 결제 취소 API 호출
-        try {
-            CancelRequestDto requestDto = new CancelRequestDto(request.refundReason());
-            portOneService.cancelPayment(payment.getPaymentId(), requestDto);
-        } catch (RuntimeException e) {
-            throw new ServiceException(ErrorCode.PORTONE_API_ERROR);
+        if(payment.getPaymentPrice() != 0) {
+            try {
+                CancelRequestDto requestDto = new CancelRequestDto(request.refundReason());
+                portOneService.cancelPayment(payment.getPaymentId(), requestDto);
+            } catch (RuntimeException e) {
+                throw new ServiceException(ErrorCode.PORTONE_API_ERROR);
+            }
         }
+
         return new CreateRefundResponse(savedRefund);
+
     }
 
     // 특정 주문 환불 내역 조회

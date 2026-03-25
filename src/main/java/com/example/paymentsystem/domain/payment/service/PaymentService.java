@@ -64,7 +64,7 @@ public class PaymentService {
                 order.getPaymentPrice()
         );
 
-        return new PaymentTryResponse(paymentRepository.save(saved));
+        return new PaymentTryResponse(paymentRepository.saveAndFlush(saved));
     }
 
     @Transactional
@@ -75,6 +75,10 @@ public class PaymentService {
 
         if (payment.getPaymentPrice() == 0) {
             payment.stateUpdate(PaymentStatus.PAID);
+            Order order = payment.getOrder();
+            if(order.getUsedPoint() > 0) {
+                pointHistoryService.usePoint(order.getUser().getId(), order);
+            }
             orderService.stockReduce(payment.getOrder());
             orderService.completeOrder(payment.getOrder());
             return;
@@ -100,13 +104,15 @@ public class PaymentService {
         // 6. 재고 차감
         payment.stateUpdate(PaymentStatus.PAID);
 
-        // 호진 추가
+
+        orderService.stockReduce(payment.getOrder());
+
         Order order = payment.getOrder();
-        if(order.getUsedPoint() > 0) {
+
+        if (order.getUsedPoint() != null && order.getUsedPoint() > 0) {
             pointHistoryService.usePoint(order.getUser().getId(), order);
         }
 
-        orderService.stockReduce(payment.getOrder());
         orderService.completeOrder(payment.getOrder());
     }
 

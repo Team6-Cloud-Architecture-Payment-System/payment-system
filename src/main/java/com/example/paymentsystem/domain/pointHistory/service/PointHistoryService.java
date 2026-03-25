@@ -112,10 +112,7 @@ public class PointHistoryService {
             log.warn("이미 복구된 포인트 내역이 있습니다. Order ID: {}", order.getId());
             return;
         }
-        // 2. 실제 사용한 금액 꺼내오기
-//        PointHistory spentPoint = pointHistoryRepository.findByOrderAndType(order, Type.SPENT).orElseThrow(
-//                () -> new ServiceException(ErrorCode.POINT_HISTORY_NOT_FOUND)
-//        );
+
         Optional<PointHistory> spentPointOpt = pointHistoryRepository.findByOrderAndType(order, Type.SPENT);
         if (spentPointOpt.isEmpty()) {
             log.info("복구할 포인트 사용 내역이 없습니다. Order ID: {}", order.getId());
@@ -144,11 +141,6 @@ public class PointHistoryService {
         if (pointHistoryRepository.existsByOrderAndType(order, Type.CANCELLED)) {
             return; // 이미 취소됨
         }
-        // 호진 수정
-        // 거래 내역 확인
-//        PointHistory earnedPoint = pointHistoryRepository.findByOrderAndType(order, Type.EARNED).orElseThrow(
-//                () -> new ServiceException(ErrorCode.EARNED_POINT_NOT_FOUND)
-//        );
 
         Optional<PointHistory> earnedPointOpt = pointHistoryRepository.findByOrderAndType(order, Type.EARNED);
 
@@ -158,16 +150,6 @@ public class PointHistoryService {
         }
 
         PointHistory earnedPoint = earnedPointOpt.get();
-
-//        PointHistory cancelledPoint = new PointHistory(
-//                -earnedPoint.getPoint(),
-//                Type.CANCELLED,
-//                user,
-//                order
-//        );
-//        pointHistoryRepository.save(cancelledPoint);
-//
-//        user.updatePoint(-earnedPoint.getPoint());
 
         Long cancelPrice = earnedPoint.getPoint() * -1;
 
