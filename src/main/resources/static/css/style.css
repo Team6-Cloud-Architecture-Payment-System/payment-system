@@ -1018,7 +1018,7 @@ body {
     color: var(--primary);
 }
 
-/* Cart Modal */
+/* Cart Modal — 네비(1000) 위, 토스트(9999) 아래; body 직속일 때 전체 화면 덮음 */
 .cart-modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -1026,7 +1026,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 2000;
+    z-index: 9000;
     opacity: 0;
     pointer-events: none;
     /* transition을 JS 인라인 style로 관리 — CSS transition 제거 */
@@ -1071,8 +1071,10 @@ body {
     transform: scale(1.1);
 }
 
-/* Footer */
+/* Footer — 모달(z-index 9k대)·토스트(9999)보다 아래 레이어에 고정 */
 .footer {
+    position: relative;
+    z-index: 0;
     background: var(--bg-primary);
     border-top: 5px solid var(--border);
     padding: var(--spacing-xl) var(--spacing-lg);

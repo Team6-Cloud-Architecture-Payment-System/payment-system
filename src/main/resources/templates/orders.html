@@ -49,7 +49,7 @@
         </div>
 
         <!-- 주문 상세 모달 -->
-        <div id="order-detail-modal" onclick="if(event.target === this) closeOrderDetailModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 2000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div id="order-detail-modal" onclick="if(event.target === this) closeOrderDetailModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 9000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
             <div style="background: var(--bg-primary); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border: 4px solid var(--border); box-shadow: 12px 12px 0px var(--shadow); position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 3px solid var(--border); padding-bottom: 1rem;">
                     <h2 style="margin: 0; font-family: 'Righteous', display; text-transform: uppercase;">주문 상세 정보</h2>
@@ -65,7 +65,7 @@
         </div>
 
         <!-- 환불 사유 입력 모달 -->
-        <div id="refund-reason-modal" onclick="if(event.target === this) closeRefundReasonModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 2100; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div id="refund-reason-modal" onclick="if(event.target === this) closeRefundReasonModal()" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 9100; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
             <div style="background: var(--bg-primary); padding: 2rem; border-radius: var(--radius-lg); width: 90%; max-width: 520px; border: 4px solid var(--border); box-shadow: 12px 12px 0px var(--shadow);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 3px solid var(--border); padding-bottom: 0.75rem;">
                     <h3 style="margin: 0; font-family: 'Righteous', display; text-transform: uppercase;">환불 요청</h3>
@@ -113,6 +113,15 @@
 
             // 페이지 로드 시 초기화
             document.addEventListener('DOMContentLoaded', async () => {
+                // 주문/환불 모달을 body 직속으로 옮김 — .content-area 등 조상의 transform·stacking 때문에
+                // position:fixed가 뷰포트 전체가 아니게 잡혀 푸터가 딤 위로 보이는 문제 방지
+                ['order-detail-modal', 'refund-reason-modal'].forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (el && el.parentElement !== document.body) {
+                        document.body.appendChild(el);
+                    }
+                });
+
                 populateApiList();
                 selectedOrderUid = getSelectedOrderUidFromQuery();
 
@@ -472,6 +481,8 @@
             async function openOrderDetailModal(orderUid) {
                 const modal = document.getElementById('order-detail-modal');
                 const modalContent = modal.querySelector(':scope > div');
+                const firstOpen = modal.style.display !== 'flex';
+                if (firstOpen && typeof lockBodyScroll === 'function') lockBodyScroll();
                 // 모달 표시 — opacity만 사용 (transform 없음, stacking context 생성 방지)
                 modal.style.opacity = '0';
                 modal.style.display = 'flex';
@@ -606,6 +617,7 @@
             function closeOrderDetailModal() {
                 const modal = document.getElementById('order-detail-modal');
                 const modalContent = modal.querySelector(':scope > div');
+                if (modal.style.display !== 'flex') return;
 
                 // 닫기 애니메이션 (인라인 style)
                 if (modalContent) {
@@ -625,6 +637,7 @@
                         modalContent.style.transform = '';
                         modalContent.style.opacity = '';
                     }
+                    if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
                 }, 280);
             }
 
@@ -655,7 +668,10 @@
                 const modal = document.getElementById('refund-reason-modal');
                 const input = document.getElementById('refund-reason-input');
                 if (input) input.value = '';
-                if (modal) modal.style.display = 'flex';
+                if (modal) {
+                    modal.style.display = 'flex';
+                    if (typeof lockBodyScroll === 'function') lockBodyScroll();
+                }
                 if (input) input.focus();
             }
 
@@ -664,7 +680,11 @@
                 const modal = document.getElementById('refund-reason-modal');
                 const input = document.getElementById('refund-reason-input');
                 if (input) input.value = '';
-                if (modal) modal.style.display = 'none';
+                if (modal) {
+                    const wasOpen = modal.style.display === 'flex';
+                    modal.style.display = 'none';
+                    if (wasOpen && typeof unlockBodyScroll === 'function') unlockBodyScroll();
+                }
             }
 
             async function submitRefundRequest() {

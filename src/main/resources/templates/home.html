@@ -391,6 +391,12 @@
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', () => {
+            // 장바구니 모달을 body 직속으로 옮김 — 조상 stacking 때문에 헤더가 오버레이 위로 보이는 현상 방지
+            const cartModalEl = document.getElementById('cart-modal');
+            if (cartModalEl && cartModalEl.parentElement !== document.body) {
+                document.body.appendChild(cartModalEl);
+            }
+
             // API 목록 동적 생성 (비동기)
             populateApiList();
 
@@ -412,6 +418,9 @@
             const modal = document.getElementById('cart-modal');
             const content = document.getElementById('cart-modal-content');
             if (!modal) return;
+            if (modal.classList.contains('active')) return;
+
+            if (typeof lockBodyScroll === 'function') lockBodyScroll();
 
             // 오버레이 fade-in (opacity만, transform 없음 — stacking context 생성 방지)
             modal.style.opacity = '0';
@@ -437,7 +446,7 @@
         function closeCartModal() {
             const modal = document.getElementById('cart-modal');
             const content = document.getElementById('cart-modal-content');
-            if (!modal) return;
+            if (!modal || !modal.classList.contains('active')) return;
 
             // 콘텐츠 박스 scale-out
             if (content) {
@@ -460,6 +469,7 @@
                     content.style.transform = '';
                     content.style.opacity = '';
                 }
+                if (typeof unlockBodyScroll === 'function') unlockBodyScroll();
             }, 280);
         }
 
