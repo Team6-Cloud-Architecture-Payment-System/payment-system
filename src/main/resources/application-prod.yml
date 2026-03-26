@@ -17,3 +17,5 @@ spring:
   h2:
     console:
       enabled: true
+api:
+  base-url: https://api.dogpedia.store
