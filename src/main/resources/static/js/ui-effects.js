@@ -340,6 +340,26 @@ function _repositionNotifications() {
 }
 
 /* ============================================
+   Body scroll lock — 모달 중첩 시 참조 카운트로 한 번만 해제
+   ============================================ */
+let _bodyScrollLockCount = 0;
+
+function lockBodyScroll() {
+    _bodyScrollLockCount++;
+    if (_bodyScrollLockCount !== 1) return;
+    document.documentElement.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden';
+}
+
+function unlockBodyScroll() {
+    if (_bodyScrollLockCount === 0) return;
+    _bodyScrollLockCount--;
+    if (_bodyScrollLockCount !== 0) return;
+    document.documentElement.style.overflow = '';
+    document.body.style.overflow = '';
+}
+
+/* ============================================
    8. Auto-Init on DOMContentLoaded
    ============================================ */
 
