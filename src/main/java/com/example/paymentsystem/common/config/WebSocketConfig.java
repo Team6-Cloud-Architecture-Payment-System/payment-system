@@ -22,7 +22,8 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                         "http://localhost:8080",
                         "http://3.36.86.233:8080",
                         "https://dogpedia.store",
-                        "https://www.dogpedia.store"
+                        "https://www.dogpedia.store",
+                        "https://api.dogpedia.store"
 
                 )
                 .addInterceptors(cookieAuthHandshakeInterceptor)
