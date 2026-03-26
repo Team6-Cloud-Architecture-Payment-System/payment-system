@@ -2,8 +2,6 @@ package com.example.paymentsystem.domain.pointHistory.repository;
 
 import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.order.entity.Order;
-import com.example.paymentsystem.domain.pointHistory.dto.GetPointTransactionHistory;
-import com.example.paymentsystem.domain.pointHistory.dto.PointHistorySummaryResponse;
 import com.example.paymentsystem.domain.pointHistory.entity.PointHistory;
 import com.example.paymentsystem.domain.pointHistory.entity.Type;
 import org.springframework.data.domain.Page;
@@ -21,7 +19,7 @@ public interface PointHistoryRepository extends JpaRepository<PointHistory, Long
     @Query("SELECT SUM(p.point) FROM PointHistory p WHERE p.user = :user")
     Long sumPointByUser(@Param("user") User user);
 
-    Page<PointHistory> findAllByUser(User user, Pageable pageable);
+    Page<PointHistory> findAllByUserOrderByCreatedAtDesc(User user, Pageable pageable);
 
     boolean existsByOrderAndType(Order order, Type type);
 }

@@ -199,7 +199,7 @@ public class PointHistoryService {
                 () -> new ServiceException(ErrorCode.USER_NOT_FOUND)
         );
 
-        Page<PointHistory> page = pointHistoryRepository.findAllByUser(user, pageable);
+        Page<PointHistory> page = pointHistoryRepository.findAllByUserOrderByCreatedAtDesc(user, pageable);
 
         List<PointHistorySummaryResponse> pointHistoryList = page.getContent().stream()
                 .map(PointHistorySummaryResponse::new)
