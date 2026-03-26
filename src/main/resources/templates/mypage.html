@@ -8,38 +8,30 @@
         <h1 style="font-family: 'Righteous', display; font-size: 2.5rem; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px;">📋 My Page</h1>
 
         <!-- 2-Column Grid -->
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+        <div id="mypage-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
 
             <!-- 1. 회원 정보 카드 -->
-            <div class="card" id="user-info-card">
+            <div class="card stagger-item" id="user-info-card" style="opacity: 0; animation-delay: 0ms;">
                 <div class="card-header">👤 회원 정보</div>
-                <div class="card-body" id="user-info-body">
-                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
-                </div>
+                <div class="card-body" id="user-info-body"></div>
             </div>
 
             <!-- 2. 등급 프로그레스 카드 -->
-            <div class="card" id="grade-progress-card">
+            <div class="card stagger-item" id="grade-progress-card" style="opacity: 0; animation-delay: 100ms;">
                 <div class="card-header">🏆 등급 현황</div>
-                <div class="card-body" id="grade-progress-body">
-                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
-                </div>
+                <div class="card-body" id="grade-progress-body"></div>
             </div>
 
             <!-- 3. 멤버십 등급 정책 카드 (full width) -->
-            <div class="card" style="grid-column: 1 / -1;" id="membership-tiers-card">
+            <div class="card stagger-item" style="grid-column: 1 / -1; opacity: 0; animation-delay: 200ms;" id="membership-tiers-card">
                 <div class="card-header">🎖️ 멤버십 등급 정책</div>
-                <div class="card-body" id="membership-tiers-body">
-                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
-                </div>
+                <div class="card-body" id="membership-tiers-body"></div>
             </div>
 
             <!-- 4. 포인트 거래 내역 카드 (full width) -->
-            <div class="card" style="grid-column: 1 / -1;" id="point-history-card">
+            <div class="card stagger-item" style="grid-column: 1 / -1; opacity: 0; animation-delay: 300ms;" id="point-history-card">
                 <div class="card-header">💰 포인트 거래 내역</div>
-                <div class="card-body" id="point-history-body">
-                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
-                </div>
+                <div class="card-body" id="point-history-body"></div>
             </div>
         </div>
 
@@ -54,11 +46,11 @@
         async function loadUserInfo() {
             const body = document.getElementById('user-info-body');
             try {
-                const result = await getSharedCurrentUser();
+                const result = await withMinDelay(() => getSharedCurrentUser());
                 const user = result?.data || result || {};
 
                 body.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; flex-direction: column; gap: 1rem;" class="content-reveal">
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--shadow);">
                             <span style="font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">이름</span>
                             <span style="font-weight: 600;">${user.name || '-'}</span>
@@ -73,10 +65,19 @@
                         </div>
                         <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--shadow); background: var(--text-primary); color: var(--bg-primary);">
                             <span style="font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">💎 보유 포인트</span>
-                            <span style="font-weight: 800; font-size: 1.2rem;">${user.point !== undefined ? user.point.toLocaleString() : '0'} P</span>
+                            <span id="point-count-up" style="font-weight: 800; font-size: 1.2rem;">0 P</span>
                         </div>
                     </div>
                 `;
+
+                // 포인트 카운트업 애니메이션
+                const pointEl = document.getElementById('point-count-up');
+                const pointValue = user.point !== undefined ? user.point : 0;
+                if (pointEl && pointValue > 0) {
+                    animateCountUp(pointEl, pointValue, 800, ' P');
+                } else if (pointEl) {
+                    pointEl.textContent = '0 P';
+                }
             } catch (e) {
                 body.innerHTML = '<p style="color: var(--danger); font-weight: 700;">회원 정보를 불러올 수 없습니다.</p>';
             }
@@ -86,10 +87,12 @@
         async function loadGradeProgress() {
             const body = document.getElementById('grade-progress-body');
             try {
-                const [membershipRes, tiersRes] = await Promise.all([
-                    makeApiRequest('get-my-membership', {}),
-                    makeApiRequest('list-membership-tiers', {})
-                ]);
+                const [membershipRes, tiersRes] = await withMinDelay(async () => {
+                    return await Promise.all([
+                        makeApiRequest('get-my-membership', {}),
+                        makeApiRequest('list-membership-tiers', {})
+                    ]);
+                });
 
                 myMembership = membershipRes?.data || membershipRes || {};
                 membershipTiers = tiersRes?.data || tiersRes || [];
@@ -123,6 +126,7 @@
                 }
 
                 body.innerHTML = `
+                    <div class="content-reveal">
                     <div style="text-align: center; margin-bottom: 1.5rem;">
                         <span style="font-size: 3rem;">${gradeEmojis[currentGrade] || '🏅'}</span>
                         <div style="font-family: 'Righteous', display; font-size: 1.8rem; text-transform: uppercase; margin-top: 0.5rem; letter-spacing: 1px;">${gradeNames[currentGrade] || currentGrade}</div>
@@ -133,13 +137,14 @@
                             <span>누적 구매금액</span>
                             <span>₩${totalPrice.toLocaleString()}</span>
                         </div>
-                        <!-- Progress Bar -->
+                        <!-- Progress Bar with stripe animation -->
                         <div style="width: 100%; height: 28px; border: 3px solid var(--border); box-shadow: inset 2px 2px 0px var(--shadow); position: relative; overflow: hidden;">
-                            <div style="height: 100%; width: ${progressPct}%; background: var(--text-primary); transition: width 0.6s ease;"></div>
+                            <div class="progress-striped" style="height: 100%; width: ${progressPct}%; background: var(--text-primary); transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);"></div>
                             <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; font-size: 0.8rem; color: ${progressPct > 50 ? 'var(--bg-primary)' : 'var(--text-primary)'}; mix-blend-mode: ${progressPct > 50 ? 'normal' : 'normal'};">${progressPct}%</span>
                         </div>
                     </div>
                     <p style="font-weight: 700; font-size: 0.9rem; text-align: center;">${remainText}</p>
+                    </div>
                 `;
             } catch (e) {
                 body.innerHTML = '<p style="color: var(--danger); font-weight: 700;">등급 정보를 불러올 수 없습니다.</p>';
@@ -209,9 +214,9 @@
             body.innerHTML = '<p style="color: var(--text-secondary); font-weight: 600;">로딩중...</p>';
 
             try {
-                const res = await makeApiRequest('list-point-history', {
+                const res = await withMinDelay(() => makeApiRequest('list-point-history', {
                     params: { page: pointHistoryPage, size: pointHistorySize }
-                });
+                }));
 
                 const payload = res?.data || res || {};
                 const history = payload.pointHistory || [];
@@ -292,6 +297,12 @@
 
         /* ======= Init ======= */
         async function initMypage() {
+            // 스켈레톤 즉시 표시
+            document.getElementById('user-info-body').innerHTML = generateInfoSkeletons(4);
+            document.getElementById('grade-progress-body').innerHTML = generateGradeSkeletons();
+            document.getElementById('membership-tiers-body').innerHTML = generateTableSkeletons(3, 4);
+            document.getElementById('point-history-body').innerHTML = generateTableSkeletons(5, 5);
+
             await Promise.all([
                 loadUserInfo(),
                 loadGradeProgress()

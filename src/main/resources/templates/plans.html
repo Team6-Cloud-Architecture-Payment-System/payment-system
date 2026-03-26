@@ -12,9 +12,6 @@
 
             <!-- 동적으로 로드되는 플랜 카드 -->
             <div id="plans-container" class="card-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
-                <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
-                    플랜 로딩 중...
-                </div>
             </div>
 
             <div style="margin-top: 3rem; padding: 2rem; background: var(--bg-secondary); border-radius: var(--radius-lg);">
@@ -66,12 +63,15 @@
         };
 
         // 페이지 로드 시 플랜 로드
-        document.addEventListener('DOMContentLoaded', loadPlans);
+        document.addEventListener('DOMContentLoaded', () => {
+            // 스켈레톤 즉시 표시
+            document.getElementById('plans-container').innerHTML = generatePlanSkeletons(3);
+            loadPlans();
+        });
 
         async function loadPlans() {
             try {
-                const plans = await makeApiRequest('list-plans', {
-                });
+                const plans = await withMinDelay(() => makeApiRequest('list-plans', {}));
 
                 if (!validateApiResponse('list-plans', plans)) {
                     throw new Error('API 응답 형식이 올바르지 않습니다.');
@@ -108,9 +108,9 @@
                 const cardStyle = isPopular ? 'border-color: var(--primary); border-width: 3px; transform: scale(1.05);' : '';
 
                 return `
-                    <div class="plan-card" style="${cardStyle}">
+                    <div class="plan-card stagger-item" style="${cardStyle} animation-delay: ${index * 120}ms;">
                         ${isPopular ? `
-                            <div style="background: var(--primary); color: white; padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; margin-bottom: 1rem; font-weight: 600;">
+                            <div class="anim-pulse" style="background: var(--primary); color: white; padding: 0.5rem; border-radius: var(--radius-sm); text-align: center; margin-bottom: 1rem; font-weight: 600;">
                                 🔥 가장 인기 있는
                             </div>
                         ` : ''}

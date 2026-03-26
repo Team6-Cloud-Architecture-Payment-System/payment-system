@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
 <head>
-    <title>주문 - 6하은칙</title>
+    <title>주문 - 견생보감</title>
 </head>
 <body>
     <div th:fragment="content">
@@ -11,8 +11,19 @@
         <div class="card">
             <div class="card-header">내 주문 목록</div>
             <div class="card-body">
-                <div id="order-list-loading" style="text-align: center; padding: 3rem; color: var(--text-primary); font-weight: 800; font-size: 1.2rem;">
-                    주문 목록을 불러오는 중... <span class="skeleton" style="display:inline-block; width:50px; height:1rem; border-radius: 4px; border: 2px solid var(--border);"></span>
+                <div id="order-list-loading" style="text-align: center; padding: 0; margin-top: 1rem;">
+                    <div style="border: 3px solid var(--border); border-radius: var(--radius-md); box-shadow: 4px 4px 0px var(--shadow); overflow: hidden;">
+                        <div style="background: var(--text-primary); color: var(--bg-primary); padding: 0.75rem;">
+                            <div class="skeleton-table-row" style="grid-template-columns: 2fr 1fr 1fr 1fr 1fr;">
+                                <div class="skeleton-table-cell" style="font-weight: 800; font-size: 0.85rem;">주문 번호</div>
+                                <div class="skeleton-table-cell" style="font-weight: 800; font-size: 0.85rem;">금액</div>
+                                <div class="skeleton-table-cell" style="font-weight: 800; font-size: 0.85rem;">포인트</div>
+                                <div class="skeleton-table-cell" style="font-weight: 800; font-size: 0.85rem;">상태</div>
+                                <div class="skeleton-table-cell" style="font-weight: 800; font-size: 0.85rem;">작업</div>
+                            </div>
+                        </div>
+                        <div id="skeleton-table-body"></div>
+                    </div>
                 </div>
                 <div id="order-list-container" style="display: none; overflow-x: auto; margin-top: 1rem;">
                     <table style="width: 100%; border-collapse: separate; border-spacing: 0; border: 3px solid var(--border); border-radius: var(--radius-md); box-shadow: 4px 4px 0px var(--shadow); background: var(--bg-primary);">
@@ -104,8 +115,18 @@
             document.addEventListener('DOMContentLoaded', async () => {
                 populateApiList();
                 selectedOrderUid = getSelectedOrderUidFromQuery();
-                await loadCurrentUser();
-                await loadOrders();
+
+                // 스켈레톤 즉시 표시
+                const skeletonBody = document.getElementById('skeleton-table-body');
+                if (skeletonBody) {
+                    skeletonBody.innerHTML = generateTableSkeletons(5, 5);
+                }
+
+                // API 호출 + 최소 0.5초 딜레이
+                await withMinDelay(async () => {
+                    await loadCurrentUser();
+                    await loadOrders();
+                });
             });
 
             // 사용자 정보 로드
@@ -244,6 +265,9 @@
 
                     tbody.appendChild(tr);
                 });
+
+                // 행 스태거 애니메이션
+                animateTableRows('order-list-body', 300);
             }
 
             // 주문 결제하기
@@ -446,12 +470,31 @@
 
             // 주문 상세 모달 열기
             async function openOrderDetailModal(orderUid) {
-                document.getElementById('order-detail-modal').style.display = 'flex';
+                const modal = document.getElementById('order-detail-modal');
+                const modalContent = modal.querySelector(':scope > div');
+                // 모달 표시 — opacity만 사용 (transform 없음, stacking context 생성 방지)
+                modal.style.opacity = '0';
+                modal.style.display = 'flex';
+                requestAnimationFrame(() => { modal.style.transition = 'opacity 0.3s ease'; modal.style.opacity = '1'; });
+
+                // 모달 내용 박스 인라인 scale 애니메이션 (classList 방식 제거 — 클래스 잔류 버그 방지)
+                if (modalContent) {
+                    modalContent.style.transition = 'none';
+                    modalContent.style.transform = 'scale(0.93)';
+                    modalContent.style.opacity = '0';
+                    setTimeout(() => {
+                        modalContent.style.transition = 'transform 0.35s cubic-bezier(0.22,1,0.36,1), opacity 0.3s ease';
+                        modalContent.style.transform = 'scale(1)';
+                        modalContent.style.opacity = '1';
+                    }, 10);
+                }
+
                 document.getElementById('order-detail-loading').style.display = 'block';
+                document.getElementById('order-detail-loading').innerHTML = '<div style="padding: 1rem;">' + generateInfoSkeletons(4) + '</div>';
                 document.getElementById('order-detail-content').style.display = 'none';
 
-                // Allow 100ms for browser to render modal before api block
-                setTimeout(async () => {
+                // 최소 0.5초 딜레이 + API 호출
+                await withMinDelay(async () => {
                     try {
                         let finalOrderUid = orderUid;
                         let raw;
@@ -550,23 +593,39 @@
 
                         document.getElementById('order-detail-loading').style.display = 'none';
                         contentEl.style.display = 'block';
+                        contentEl.classList.add('content-reveal');
 
                     } catch (error) {
                         console.error('Failed to load order details:', error);
                         document.getElementById('order-detail-loading').innerHTML = '<span style="color: var(--danger); font-size: 1.2rem; font-weight: 800;">주문 상세 정보를 불러오는데 실패했습니다.</span>';
                     }
-                }, 100);
+                });
             }
 
             // 주문 상세 모달 닫기
             function closeOrderDetailModal() {
                 const modal = document.getElementById('order-detail-modal');
-                modal.style.transition = "opacity 0.2s ease";
-                modal.style.opacity = "0";
+                const modalContent = modal.querySelector(':scope > div');
+
+                // 닫기 애니메이션 (인라인 style)
+                if (modalContent) {
+                    modalContent.style.transition = 'transform 0.25s ease, opacity 0.2s ease';
+                    modalContent.style.transform = 'scale(0.95)';
+                    modalContent.style.opacity = '0';
+                }
+                modal.style.transition = 'opacity 0.25s ease';
+                modal.style.opacity = '0';
+
                 setTimeout(() => {
                     modal.style.display = 'none';
-                    modal.style.opacity = "1";
-                }, 200);
+                    modal.style.opacity = '1';
+                    // 다음 오픈을 위해 인라인 style 리셋
+                    if (modalContent) {
+                        modalContent.style.transition = '';
+                        modalContent.style.transform = '';
+                        modalContent.style.opacity = '';
+                    }
+                }, 280);
             }
 
             // 모달 내 주문 취소
