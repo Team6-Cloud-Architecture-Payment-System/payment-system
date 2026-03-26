@@ -52,33 +52,6 @@ public class PaymentController {
         return ResponseEntity.ok().build();
     }
 
-    //포트원 검증 엔드포인트
-    @GetMapping("/api/payments/{paymentId}/verify")
-    public ResponseEntity<ApiResponse> verifyPayment(@PathVariable String paymentId) {
-
-        validatePaymentId(paymentId);
-
-        PortOneVerificationResponseDto response = portOneService.getVerifyPayment(paymentId);
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
-    //포트원 결제 취소 엔드포인트
-    @PostMapping("/api/payments/{paymentId}/cancel")
-    public ResponseEntity<ApiResponse> cancelPayment(
-            @PathVariable String paymentId,
-            @RequestBody CancelRequestDto request
-    ) {
-        validatePaymentId(paymentId);
-        CancelResponseDto response = portOneService.cancelPayment(paymentId, request);
-
-        if ("SUCCEEDED".equals(response.cancellation().status())) {
-            log.info("취소 완료 시각: {}", response.cancellation().cancelledAt());
-        }
-
-        log.info("포트원 취소 response: {}", response.cancellation().totalAmount());
-        return ResponseEntity.ok(ApiResponse.success(response));
-    }
-
     private void validatePaymentId(String paymentId) {
         //hasText() - null, 빈문자열, 공백 모두 처리
         if (!StringUtils.hasText(paymentId)) {
