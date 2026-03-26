@@ -191,7 +191,17 @@ api:
     list-point-history:
       url: /api/points/me/history
       method: GET
-      description: 포인트 거래 내역 조회
+      description: 포인트 거래 내역 조회 (페이지네이션)
+      request:
+        fields:
+          - name: page
+            type: number
+            required: false
+            description: 페이지 번호 (기본값 1)
+          - name: size
+            type: number
+            required: false
+            description: 페이지 크기 (기본값 10)
       response:
         body:
           fields:
@@ -199,9 +209,9 @@ api:
               type: boolean
               required: true
             - name: data
-              type: array
+              type: object
               required: true
-              description: "[{ id, orderId, point, type, pointCreatedAt, pointExpiredAt }]"
+              description: "{ pointHistory: [{ id, orderId, point, type, createdAt, expiredAt }], currentPage, size, totalCount, totalPages }"
             - name: message
               type: string
               required: true
@@ -426,7 +436,7 @@ api:
             - name: data
               type: object
               required: false
-              description: "{ customerUid?, email?, name?, phone?, pointBalance? }"
+              description: "{ id, name, email, phoneNumber, point }"
             - name: message
               type: string
               required: true

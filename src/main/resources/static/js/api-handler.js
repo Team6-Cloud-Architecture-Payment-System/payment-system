@@ -15,6 +15,7 @@ async function makeApiRequest(endpointKey, options = {}) {
         body = null,
         params = {},
         pathParams = {},
+        queryParams = null,
         returnHeaders = false
     } = options;
 
@@ -42,7 +43,18 @@ async function makeApiRequest(endpointKey, options = {}) {
         const method = options.method || endpointContract.method || 'GET';
 
         // URL 생성
-        const url = await buildApiUrl(endpointKey, pathParams);
+        let url = await buildApiUrl(endpointKey, pathParams);
+
+        // 쿼리 파라미터 추가 (params 또는 queryParams 사용 가능)
+        const qp = queryParams || (Object.keys(params).length > 0 ? params : null);
+        if (qp && typeof qp === 'object' && Object.keys(qp).length > 0) {
+            const qs = new URLSearchParams();
+            Object.entries(qp).forEach(([k, v]) => {
+                if (v !== undefined && v !== null) qs.append(k, v);
+            });
+            const qsStr = qs.toString();
+            if (qsStr) url += (url.includes('?') ? '&' : '?') + qsStr;
+        }
 
         // 엔드포인트 표시 업데이트
         updateEndpointDisplay(method, url);

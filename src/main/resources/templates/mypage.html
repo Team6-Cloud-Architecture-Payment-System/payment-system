@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>마이페이지 - Commerce Demo</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <h1 style="font-family: 'Righteous', display; font-size: 2.5rem; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px;">📋 My Page</h1>
+
+        <!-- 2-Column Grid -->
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+
+            <!-- 1. 회원 정보 카드 -->
+            <div class="card" id="user-info-card">
+                <div class="card-header">👤 회원 정보</div>
+                <div class="card-body" id="user-info-body">
+                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
+                </div>
+            </div>
+
+            <!-- 2. 등급 프로그레스 카드 -->
+            <div class="card" id="grade-progress-card">
+                <div class="card-header">🏆 등급 현황</div>
+                <div class="card-body" id="grade-progress-body">
+                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
+                </div>
+            </div>
+
+            <!-- 3. 멤버십 등급 정책 카드 (full width) -->
+            <div class="card" style="grid-column: 1 / -1;" id="membership-tiers-card">
+                <div class="card-header">🎖️ 멤버십 등급 정책</div>
+                <div class="card-body" id="membership-tiers-body">
+                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
+                </div>
+            </div>
+
+            <!-- 4. 포인트 거래 내역 카드 (full width) -->
+            <div class="card" style="grid-column: 1 / -1;" id="point-history-card">
+                <div class="card-header">💰 포인트 거래 내역</div>
+                <div class="card-body" id="point-history-body">
+                    <p style="color: var(--text-secondary); font-weight: 600;">정보 로딩중...</p>
+                </div>
+            </div>
+        </div>
+
+    <script>
+        /* ======= State ======= */
+        let membershipTiers = [];
+        let myMembership = null;
+        let pointHistoryPage = 1;
+        const pointHistorySize = 10;
+
+        /* ======= 1. 회원 정보 ======= */
+        async function loadUserInfo() {
+            const body = document.getElementById('user-info-body');
+            try {
+                const result = await getSharedCurrentUser();
+                const user = result?.data || result || {};
+
+                body.innerHTML = `
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--shadow);">
+                            <span style="font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">이름</span>
+                            <span style="font-weight: 600;">${user.name || '-'}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--shadow);">
+                            <span style="font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">이메일</span>
+                            <span style="font-weight: 600;">${user.email || '-'}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--shadow);">
+                            <span style="font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">연락처</span>
+                            <span style="font-weight: 600;">${user.phoneNumber || '-'}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--shadow); background: var(--text-primary); color: var(--bg-primary);">
+                            <span style="font-weight: 800; text-transform: uppercase; font-size: 0.85rem;">💎 보유 포인트</span>
+                            <span style="font-weight: 800; font-size: 1.2rem;">${user.point !== undefined ? user.point.toLocaleString() : '0'} P</span>
+                        </div>
+                    </div>
+                `;
+            } catch (e) {
+                body.innerHTML = '<p style="color: var(--danger); font-weight: 700;">회원 정보를 불러올 수 없습니다.</p>';
+            }
+        }
+
+        /* ======= 2. 등급 프로그레스 ======= */
+        async function loadGradeProgress() {
+            const body = document.getElementById('grade-progress-body');
+            try {
+                const [membershipRes, tiersRes] = await Promise.all([
+                    makeApiRequest('get-my-membership', {}),
+                    makeApiRequest('list-membership-tiers', {})
+                ]);
+
+                myMembership = membershipRes?.data || membershipRes || {};
+                membershipTiers = tiersRes?.data || tiersRes || [];
+
+                // Sort tiers by minPrice ascending
+                membershipTiers.sort((a, b) => (a.minPrice || 0) - (b.minPrice || 0));
+
+                const currentGrade = myMembership.gradeNow || 'NORMAL';
+                const totalPrice = myMembership.totalPrice || 0;
+
+                // Grade display names
+                const gradeNames = { NORMAL: '일반 등급', VIP: '우수 등급', VVIP: '최우수 등급' };
+                const gradeEmojis = { NORMAL: '🥉', VIP: '🥈', VVIP: '🥇' };
+
+                // Find current tier and next tier
+                const currentTierIdx = membershipTiers.findIndex(t => t.membershipName === currentGrade);
+                const nextTier = currentTierIdx < membershipTiers.length - 1 ? membershipTiers[currentTierIdx + 1] : null;
+
+                // Progress calculation
+                let progressPct = 100;
+                let remainText = '최고 등급 달성! 🎉';
+                let progressMax = totalPrice;
+
+                if (nextTier) {
+                    const nextMin = nextTier.minPrice || 0;
+                    const currentMin = membershipTiers[currentTierIdx]?.minPrice || 0;
+                    progressPct = Math.min(100, Math.round(((totalPrice - currentMin) / (nextMin - currentMin)) * 100));
+                    const remain = Math.max(0, nextMin - totalPrice);
+                    remainText = `다음 등급(${gradeNames[nextTier.membershipName] || nextTier.membershipName})까지 <strong>₩${remain.toLocaleString()}</strong> 남음`;
+                    progressMax = nextMin;
+                }
+
+                body.innerHTML = `
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <span style="font-size: 3rem;">${gradeEmojis[currentGrade] || '🏅'}</span>
+                        <div style="font-family: 'Righteous', display; font-size: 1.8rem; text-transform: uppercase; margin-top: 0.5rem; letter-spacing: 1px;">${gradeNames[currentGrade] || currentGrade}</div>
+                    </div>
+
+                    <div style="padding: 0.75rem; border: 3px solid var(--border); box-shadow: 4px 4px 0px var(--shadow); margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; margin-bottom: 0.5rem;">
+                            <span>누적 구매금액</span>
+                            <span>₩${totalPrice.toLocaleString()}</span>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div style="width: 100%; height: 28px; border: 3px solid var(--border); box-shadow: inset 2px 2px 0px var(--shadow); position: relative; overflow: hidden;">
+                            <div style="height: 100%; width: ${progressPct}%; background: var(--text-primary); transition: width 0.6s ease;"></div>
+                            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; font-size: 0.8rem; color: ${progressPct > 50 ? 'var(--bg-primary)' : 'var(--text-primary)'}; mix-blend-mode: ${progressPct > 50 ? 'normal' : 'normal'};">${progressPct}%</span>
+                        </div>
+                    </div>
+                    <p style="font-weight: 700; font-size: 0.9rem; text-align: center;">${remainText}</p>
+                `;
+            } catch (e) {
+                body.innerHTML = '<p style="color: var(--danger); font-weight: 700;">등급 정보를 불러올 수 없습니다.</p>';
+            }
+        }
+
+        /* ======= 3. 멤버십 등급 정책 ======= */
+        async function loadMembershipTiers() {
+            const body = document.getElementById('membership-tiers-body');
+            try {
+                // Reuse if already loaded
+                let tiers = membershipTiers;
+                if (!tiers || tiers.length === 0) {
+                    const res = await makeApiRequest('list-membership-tiers', {});
+                    tiers = res?.data || res || [];
+                    tiers.sort((a, b) => (a.minPrice || 0) - (b.minPrice || 0));
+                    membershipTiers = tiers;
+                }
+
+                const gradeNames = { NORMAL: '일반 등급', VIP: '우수 등급', VVIP: '최우수 등급' };
+                const gradeEmojis = { NORMAL: '🥉', VIP: '🥈', VVIP: '🥇' };
+                const currentGrade = myMembership?.gradeNow || null;
+
+                let tableHTML = `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--text-primary); color: var(--bg-primary);">
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; border: 2px solid var(--border);">등급</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; border: 2px solid var(--border);">적립률</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; border: 2px solid var(--border);">승급 조건</th>
+                                <th style="padding: 0.75rem; text-align: left; font-weight: 800; text-transform: uppercase; font-size: 0.85rem; border: 2px solid var(--border);">혜택 설명</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                tiers.forEach(tier => {
+                    const name = gradeNames[tier.membershipName] || tier.membershipName;
+                    const emoji = gradeEmojis[tier.membershipName] || '🏅';
+                    const isCurrent = tier.membershipName === currentGrade;
+                    const rowBg = isCurrent ? 'background: #333; color: var(--bg-primary);' : '';
+                    const rewardPct = tier.rewardRate !== undefined ? (tier.rewardRate * 100).toFixed(1) : '-';
+                    const minP = tier.minPrice !== undefined ? `₩${tier.minPrice.toLocaleString()}` : '-';
+                    const maxP = tier.maxPrice !== undefined && tier.maxPrice !== null ? `₩${tier.maxPrice.toLocaleString()}` : '∞';
+
+                    tableHTML += `
+                        <tr style="${rowBg} transition: all 0.2s;">
+                            <td style="padding: 0.75rem; font-weight: 800; border: 2px solid var(--border);">${emoji} ${name}${isCurrent ? ' ← 현재' : ''}</td>
+                            <td style="padding: 0.75rem; text-align: center; font-weight: 700; border: 2px solid var(--border);">${rewardPct}%</td>
+                            <td style="padding: 0.75rem; text-align: center; font-weight: 600; border: 2px solid var(--border);">${minP} ~ ${maxP}</td>
+                            <td style="padding: 0.75rem; font-weight: 600; border: 2px solid var(--border);">${tier.promotionCriteria || '-'}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHTML += '</tbody></table>';
+                body.innerHTML = tableHTML;
+            } catch (e) {
+                body.innerHTML = '<p style="color: var(--danger); font-weight: 700;">등급 정책을 불러올 수 없습니다.</p>';
+            }
+        }
+
+        /* ======= 4. 포인트 거래 내역 ======= */
+        async function loadPointHistory(page) {
+            pointHistoryPage = page || 1;
+            const body = document.getElementById('point-history-body');
+            body.innerHTML = '<p style="color: var(--text-secondary); font-weight: 600;">로딩중...</p>';
+
+            try {
+                const res = await makeApiRequest('list-point-history', {
+                    params: { page: pointHistoryPage, size: pointHistorySize }
+                });
+
+                const payload = res?.data || res || {};
+                const history = payload.pointHistory || [];
+                const pagination = {
+                    // Spring Page.getNumber()는 0-indexed이므로 +1
+                    currentPage: (payload.currentPage !== undefined ? payload.currentPage + 1 : pointHistoryPage),
+                    totalPages: payload.totalPages || 1,
+                    totalCount: payload.totalCount || 0
+                };
+
+                if (history.length === 0) {
+                    body.innerHTML = '<p style="color: var(--text-secondary); font-weight: 700; text-align: center; padding: 2rem;">포인트 거래 내역이 없습니다.</p>';
+                    return;
+                }
+
+                const typeLabels = { EARN: '적립 ✅', USE: '사용 🔻', EXPIRED: '만료 ⏰' };
+                const typeColors = { EARN: 'var(--text-primary)', USE: 'var(--text-primary)', EXPIRED: 'var(--text-secondary)' };
+
+                let html = `
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: var(--text-primary); color: var(--bg-primary);">
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; border: 2px solid var(--border);">구분</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; border: 2px solid var(--border);">포인트</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; border: 2px solid var(--border);">주문 번호</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; border: 2px solid var(--border);">일시</th>
+                                <th style="padding: 0.75rem; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.8rem; border: 2px solid var(--border);">만료일</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                history.forEach(item => {
+                    const typeLabel = typeLabels[item.type] || item.type;
+                    const pointSign = item.type === 'EARN' ? '+' : item.type === 'USE' ? '-' : '';
+                    const pointColor = item.type === 'EARN' ? 'font-weight:800;' : item.type === 'USE' ? 'font-weight:800;' : 'font-weight:600; opacity:0.6;';
+                    const created = item.createdAt ? new Date(item.createdAt).toLocaleString('ko-KR') : '-';
+                    const expired = item.expiredAt ? new Date(item.expiredAt).toLocaleString('ko-KR') : '-';
+
+                    html += `
+                        <tr style="transition: all 0.2s;">
+                            <td style="padding: 0.75rem; text-align: center; font-weight: 700; border: 2px solid var(--border);">${typeLabel}</td>
+                            <td style="padding: 0.75rem; text-align: center; border: 2px solid var(--border); ${pointColor}">${pointSign}${(item.point || 0).toLocaleString()} P</td>
+                            <td style="padding: 0.75rem; text-align: center; font-weight: 600; border: 2px solid var(--border);">${item.orderId || '-'}</td>
+                            <td style="padding: 0.75rem; text-align: center; font-weight: 600; font-size: 0.85rem; border: 2px solid var(--border);">${created}</td>
+                            <td style="padding: 0.75rem; text-align: center; font-weight: 600; font-size: 0.85rem; border: 2px solid var(--border);">${expired}</td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table>';
+
+                // Pagination
+                html += `
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;"
+                            onclick="loadPointHistory(${pagination.currentPage - 1})"
+                            ${pagination.currentPage <= 1 ? 'disabled' : ''}>◀ 이전</button>
+                `;
+                for (let i = 1; i <= pagination.totalPages; i++) {
+                    const isActive = i === pagination.currentPage;
+                    html += `<button class="btn ${isActive ? 'btn-primary' : 'btn-outline'}" style="padding: 0.4rem 0.7rem; font-size: 0.85rem; min-width: 36px;"
+                        onclick="loadPointHistory(${i})">${i}</button>`;
+                }
+                html += `
+                        <button class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;"
+                            onclick="loadPointHistory(${pagination.currentPage + 1})"
+                            ${pagination.currentPage >= pagination.totalPages ? 'disabled' : ''}>다음 ▶</button>
+                        <span style="font-weight: 700; font-size: 0.85rem; margin-left: 0.5rem;">총 ${pagination.totalCount}건</span>
+                    </div>
+                `;
+
+                body.innerHTML = html;
+            } catch (e) {
+                body.innerHTML = '<p style="color: var(--danger); font-weight: 700;">포인트 내역을 불러올 수 없습니다.</p>';
+            }
+        }
+
+        /* ======= Init ======= */
+        async function initMypage() {
+            await Promise.all([
+                loadUserInfo(),
+                loadGradeProgress()
+            ]);
+            // After grade progress loads tiers, render tiers table
+            await loadMembershipTiers();
+            // Load point history
+            await loadPointHistory(1);
+        }
+
+        initMypage();
+    </script>
+    </div>
+</body>
+</html>
