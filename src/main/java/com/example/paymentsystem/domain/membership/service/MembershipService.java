@@ -2,7 +2,6 @@ package com.example.paymentsystem.domain.membership.service;
 
 import com.example.paymentsystem.common.exception.ErrorCode;
 import com.example.paymentsystem.common.exception.ServiceException;
-import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.repository.UserRepository;
 import com.example.paymentsystem.domain.membership.dto.GetMembershipTierResponse;
 import com.example.paymentsystem.domain.membership.dto.GetMyMembershipResponse;
@@ -10,7 +9,6 @@ import com.example.paymentsystem.domain.membership.entity.MembershipTier;
 import com.example.paymentsystem.domain.membership.entity.UserMembership;
 import com.example.paymentsystem.domain.membership.repository.MembershipTierRepository;
 import com.example.paymentsystem.domain.membership.repository.UserMembershipRepository;
-import com.example.paymentsystem.domain.order.entity.OrderStatus;
 import com.example.paymentsystem.domain.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

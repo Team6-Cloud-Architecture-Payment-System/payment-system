@@ -1,7 +1,7 @@
 package com.example.paymentsystem.domain.order.controller;
+
 import com.example.paymentsystem.common.dto.ApiResponse;
 import com.example.paymentsystem.domain.order.dto.CreateOrderRequest;
-import com.example.paymentsystem.domain.order.dto.CreateOrderResponse;
 import com.example.paymentsystem.domain.order.dto.OrderDetailResponse;
 import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
 import com.example.paymentsystem.domain.order.service.OrderService;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,11 +25,12 @@ public class OrderController {
 
     // 주문 생성
     @PostMapping
-    public ResponseEntity<ApiResponse<CreateOrderResponse>> create(
+    public ResponseEntity<ApiResponse> create(
             @AuthenticationPrincipal Long userId,
             @Valid @RequestBody CreateOrderRequest request
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(orderService.create(userId, request)));
     }
 
@@ -45,8 +45,9 @@ public class OrderController {
                 pageable.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "createdAt")
         );
-        return ResponseEntity.ok(
-                ApiResponse.success(orderService.getMyOrders(userId, sortedPageable))
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(orderService.getMyOrders(userId, sortedPageable))
         );
     }
 
@@ -56,22 +57,24 @@ public class OrderController {
             @AuthenticationPrincipal Long userId,
             @PathVariable Long orderId
     ) {
-        return ResponseEntity.ok(
-                ApiResponse.success(orderService.getOrderDetail(userId, orderId))
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(orderService.getOrderDetail(userId, orderId))
         );
     }
 
 
     // 주문 확정
     @PatchMapping("/{orderId}/confirm")
-    public ResponseEntity<ApiResponse<?>> confirmOrder(
+    public ResponseEntity<ApiResponse<Void>> confirmOrder(
             @AuthenticationPrincipal Long userId,
             @PathVariable Long orderId
     ) {
         orderService.confirmOrder(userId, orderId);
 
-        return ResponseEntity.ok(
-                ApiResponse.success("주문이 확정되었습니다.")
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("주문이 확정되었습니다.")
         );
     }
 }

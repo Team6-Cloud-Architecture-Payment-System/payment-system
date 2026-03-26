@@ -27,7 +27,8 @@ public class RefundController {
             @PathVariable String paymentId,
             @Valid @RequestBody CreateRefundRequest request,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(refundService.createRefundRequest(paymentId, request, userId)));
     }
 
@@ -39,7 +40,9 @@ public class RefundController {
     public ResponseEntity<ApiResponse<GetOrderRefundResponse>> getRefund(
             @PathVariable Long orderId,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(refundService.getRefund(orderId, userId)));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(refundService.getRefund(orderId, userId)));
     }
 
     // 유저 개인의 환불내역 전체 조회
@@ -49,7 +52,9 @@ public class RefundController {
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page -1, size);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(refundService.getMyRefundList(userId, pageable)));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(refundService.getMyRefundList(userId, pageable)));
     }
 
 }
