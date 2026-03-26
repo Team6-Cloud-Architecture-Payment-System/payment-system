@@ -1,6 +1,7 @@
 package com.example.paymentsystem.domain.payment.controller;
 
 import com.example.paymentsystem.common.dto.ApiResponse;
+import com.example.paymentsystem.domain.payment.dto.PaymentTryResponse;
 import com.example.paymentsystem.domain.payment.dto.WebhookRequestDto;
 import com.example.paymentsystem.domain.payment.service.PaymentService;
 import com.example.paymentsystem.domain.payment.service.WebhookService;
@@ -31,11 +32,10 @@ public class PaymentController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .build();
-
     }
 
     @PostMapping("/api/orders/{orderId}/payments")
-    public ResponseEntity<ApiResponse> tryPayment(
+    public ResponseEntity<ApiResponse<PaymentTryResponse>> tryPayment(
             @PathVariable Long orderId
             ) {
         return ResponseEntity
@@ -44,10 +44,10 @@ public class PaymentController {
     }
 
     @PostMapping("/api/payments/{paymentId}/confirm")
-    public ResponseEntity<Void> confirmPayment(@PathVariable String paymentId) {
+    public ResponseEntity<ApiResponse<Void>> confirmPayment(@PathVariable String paymentId) {
         paymentService.confirmPayment(paymentId);
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .build();
+                .body(ApiResponse.success("결제 완료되었습니다."));
     }
 }

@@ -2,6 +2,8 @@ package com.example.paymentsystem.domain.order.controller;
 
 import com.example.paymentsystem.common.dto.ApiResponse;
 import com.example.paymentsystem.domain.order.dto.CreateOrderRequest;
+import com.example.paymentsystem.domain.order.dto.OrderDetailResponse;
+import com.example.paymentsystem.domain.order.dto.OrderHistoryResponse;
 import com.example.paymentsystem.domain.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +36,7 @@ public class OrderController {
 
     // 주문 내역 조회
     @GetMapping
-    public ResponseEntity<ApiResponse> getMyOrders(
+    public ResponseEntity<ApiResponse<OrderHistoryResponse>> getMyOrders(
             @AuthenticationPrincipal Long userId,
             @PageableDefault(size = 10) Pageable pageable
     ) {
@@ -51,7 +53,7 @@ public class OrderController {
 
     // 주문 상세 조회
     @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse> getOrderDetail(
+    public ResponseEntity<ApiResponse<OrderDetailResponse>> getOrderDetail(
             @AuthenticationPrincipal Long userId,
             @PathVariable Long orderId
     ) {
@@ -64,7 +66,7 @@ public class OrderController {
 
     // 주문 확정
     @PatchMapping("/{orderId}/confirm")
-    public ResponseEntity<ApiResponse> confirmOrder(
+    public ResponseEntity<ApiResponse<Void>> confirmOrder(
             @AuthenticationPrincipal Long userId,
             @PathVariable Long orderId
     ) {

@@ -26,7 +26,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse> signUp (@Valid @RequestBody SignUpRequest request) {
+    public ResponseEntity<ApiResponse<SignUpResponse>> signUp (@Valid @RequestBody SignUpRequest request) {
         SignUpResponse response = authService.signUp(request);
 
         return ResponseEntity
@@ -35,7 +35,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LogInRequest request) {
+    public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LogInRequest request) {
         TokenResponse response = authService.login(request);
 
         return ResponseEntity
@@ -44,7 +44,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse> logout(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<LogOutResponse>> logout(@RequestHeader("Authorization") String token) {
         String accessToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
         boolean isValid = jwtTokenProvider.validateToken(accessToken);
@@ -60,7 +60,7 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse> getUserInfo(@AuthenticationPrincipal Long userId) {
+    public ResponseEntity<ApiResponse<UserInfoResponse>> getUserInfo(@AuthenticationPrincipal Long userId) {
         if (userId == null) {
             throw new ServiceException(ErrorCode.UNAUTHORIZED);
         }
