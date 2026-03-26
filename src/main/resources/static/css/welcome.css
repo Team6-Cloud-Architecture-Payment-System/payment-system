@@ -117,7 +117,7 @@ body {
     /* Center it based on the logo's position visually */
     clip-path: circle(0% at 50% 50%);
     transition: clip-path 0.8s cubic-bezier(0.7, 0, 0.3, 1);
-    pointer-events: none; /* Let hover pass through before animation */
+    pointer-events: none; /* 클릭은 제목(#logo-trigger)에서만 받음 */
 }
 
 .transition-overlay.is-active {

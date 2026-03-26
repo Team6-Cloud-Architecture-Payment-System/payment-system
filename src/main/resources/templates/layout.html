@@ -18,6 +18,7 @@
     <!-- Common Scripts -->
     <script th:src="@{/js/cookie-util.js}"></script>
     <script th:src="@{/js/app-config.js}"></script>
+    <script th:src="@{/js/ui-effects.js}"></script>
     <script th:src="@{/js/api-handler.js}"></script>
     <script th:src="@{/js/api-validator.js}"></script>
     <script th:src="@{/js/theme.js}"></script>
@@ -25,6 +26,9 @@
     <script th:src="@{/js/auth-check.js}"></script>
 </head>
 <body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition-overlay" id="page-transition-overlay"></div>
+
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="navbar-container">
@@ -55,7 +59,7 @@
     </div>
 
     <!-- Global Footer -->
-    <footer class="footer">
+    <footer class="footer animate-on-scroll">
         <div class="footer-content text-center">
             <h4 style="font-family: 'Righteous', display; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 0.5rem; text-transform: uppercase;">🐾 Team 6하은칙</h4>
             <p style="font-weight: 800; font-size: 1rem; color: var(--text-secondary);">임하은, 선경안, 정호진, 정태규, 정채림</p>

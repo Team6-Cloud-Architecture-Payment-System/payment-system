@@ -47,7 +47,7 @@ async function displayUserInfo() {
         // 사용자 정보 요소 추가 준비
         const userInfo = document.createElement('div');
         userInfo.style.cssText = 'display: flex; align-items: center; gap: 1rem; margin-right: 1rem;';
-        
+
         // 초기 로딩 상태 렌더링
         userInfo.innerHTML = `
             <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
@@ -66,7 +66,7 @@ async function displayUserInfo() {
             // 중복 요청 방지를 위해 공유된 Promise 이용
             const response = await getSharedCurrentUser();
             const userData = response?.data || response || {};
-            
+
             const nameToDisplay = userData.name || "사용자";
             const pointsToDisplay = userData.point !== undefined ? userData.point.toLocaleString() : '0';
 
@@ -101,8 +101,8 @@ function handleLogout() {
     // 쿠키에서 토큰 제거
     if (typeof removeToken === 'function') removeToken();
 
-    // 로그인 페이지로 이동
-    window.location.href = '/pages/login';
+    // welcome 페이지로 이동
+    window.location.href = '/';
 }
 
 // 페이지 로드 시 인증 체크

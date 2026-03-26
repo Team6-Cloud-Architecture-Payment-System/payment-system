@@ -269,20 +269,25 @@ function formatCurrency(amount, currency = 'KRW') {
 
 /**
  * 헬퍼: 알림 표시
+ * 향상된 버전은 ui-effects.js에서 제공됩니다.
+ * ui-effects.js가 로드되지 않았을 때의 폴백입니다.
  */
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type}`;
-    notification.textContent = message;
-    notification.style.position = 'fixed';
-    notification.style.top = '100px';
-    notification.style.right = '20px';
-    notification.style.zIndex = '9999';
-    notification.style.minWidth = '300px';
+if (typeof showNotification === 'undefined') {
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type}`;
+        notification.textContent = message;
+        notification.style.position = 'fixed';
+        notification.style.top = '100px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '300px';
 
-    document.body.appendChild(notification);
+        document.body.appendChild(notification);
 
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 }
+
