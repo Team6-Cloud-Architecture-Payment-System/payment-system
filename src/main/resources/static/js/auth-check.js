@@ -71,10 +71,10 @@ async function displayUserInfo() {
             const pointsToDisplay = userData.point !== undefined ? userData.point.toLocaleString() : '0';
 
             userInfo.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2;">
-                    <span style="font-weight: 800; font-size: 0.95rem;">👋 ${nameToDisplay}님 안녕하세요</span>
+                <a href="/pages/mypage" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: flex-end; line-height: 1.2; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.7';this.querySelector('.mypage-name').style.textDecoration='underline'" onmouseout="this.style.opacity='1';this.querySelector('.mypage-name').style.textDecoration='none'">
+                    <span class="mypage-name" style="font-weight: 800; font-size: 0.95rem;">👋 ${nameToDisplay}님 안녕하세요</span>
                     <span style="font-size: 0.85rem; font-weight: 800; color: var(--primary);">💎 ${pointsToDisplay} P</span>
-                </div>
+                </a>
                 <button onclick="handleLogout()" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.875rem;">
                     로그아웃
                 </button>
