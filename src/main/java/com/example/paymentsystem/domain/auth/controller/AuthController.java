@@ -10,7 +10,6 @@ import com.example.paymentsystem.domain.auth.dto.response.LogOutResponse;
 import com.example.paymentsystem.domain.auth.dto.response.SignUpResponse;
 import com.example.paymentsystem.domain.auth.dto.response.TokenResponse;
 import com.example.paymentsystem.domain.auth.dto.response.UserInfoResponse;
-import com.example.paymentsystem.domain.auth.entity.User;
 import com.example.paymentsystem.domain.auth.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +26,7 @@ public class AuthController {
     private final JwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/signup")
-    public ResponseEntity<ApiResponse<SignUpResponse>> signUp (@Valid @RequestBody SignUpRequest request) {
+    public ResponseEntity<ApiResponse> signUp (@Valid @RequestBody SignUpRequest request) {
         SignUpResponse response = authService.signUp(request);
 
         return ResponseEntity
@@ -36,15 +35,16 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<TokenResponse>> login(@Valid @RequestBody LogInRequest request) {
+    public ResponseEntity<ApiResponse> login(@Valid @RequestBody LogInRequest request) {
         TokenResponse response = authService.login(request);
 
         return ResponseEntity
-                .ok(ApiResponse.success(response));
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(response));
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<ApiResponse<LogOutResponse>> logout(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse> logout(@RequestHeader("Authorization") String token) {
         String accessToken = token.startsWith("Bearer ") ? token.substring(7) : token;
 
         boolean isValid = jwtTokenProvider.validateToken(accessToken);
@@ -54,11 +54,13 @@ public class AuthController {
         }else {
             response = new LogOutResponse(false, "로그아웃 실패");
         }
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(response));
     }
 
     @GetMapping("/me")
-    public ResponseEntity<ApiResponse<UserInfoResponse>> getUserInfo(@AuthenticationPrincipal Long userId) {
+    public ResponseEntity<ApiResponse> getUserInfo(@AuthenticationPrincipal Long userId) {
         if (userId == null) {
             throw new ServiceException(ErrorCode.UNAUTHORIZED);
         }
@@ -66,7 +68,9 @@ public class AuthController {
         // 2. 서비스 레이어 호출 (ID를 넘겨서 DB 조회 및 DTO 변환)
         UserInfoResponse response = authService.userInfo(userId);
 
-        return ResponseEntity.ok(ApiResponse.success(response));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(response));
 
     }
 }

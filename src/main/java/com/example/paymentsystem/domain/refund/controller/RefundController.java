@@ -2,9 +2,6 @@ package com.example.paymentsystem.domain.refund.controller;
 
 import com.example.paymentsystem.common.dto.ApiResponse;
 import com.example.paymentsystem.domain.refund.dto.CreateRefundRequest;
-import com.example.paymentsystem.domain.refund.dto.CreateRefundResponse;
-import com.example.paymentsystem.domain.refund.dto.GetMyRefundListResponse;
-import com.example.paymentsystem.domain.refund.dto.GetOrderRefundResponse;
 import com.example.paymentsystem.domain.refund.service.RefundService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +20,12 @@ public class RefundController {
 
     // 환불 요청
     @PostMapping("/payments/{paymentId}/refunds")
-    public ResponseEntity<ApiResponse<CreateRefundResponse>> createRefundRequest(
+    public ResponseEntity<ApiResponse> createRefundRequest(
             @PathVariable String paymentId,
             @Valid @RequestBody CreateRefundRequest request,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
                 .body(ApiResponse.success(refundService.createRefundRequest(paymentId, request, userId)));
     }
 
@@ -36,20 +34,24 @@ public class RefundController {
 
     // 특정 주문 환불 내역 조회
     @GetMapping("/orders/{orderId}/refunds")
-    public ResponseEntity<ApiResponse<GetOrderRefundResponse>> getRefund(
+    public ResponseEntity<ApiResponse> getRefund(
             @PathVariable Long orderId,
             @AuthenticationPrincipal Long userId) {
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(refundService.getRefund(orderId, userId)));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(refundService.getRefund(orderId, userId)));
     }
 
     // 유저 개인의 환불내역 전체 조회
     @GetMapping("/refunds/me")
-    public ResponseEntity<ApiResponse<GetMyRefundListResponse>> getMyRefundList(
+    public ResponseEntity<ApiResponse> getMyRefundList(
             @AuthenticationPrincipal Long userId,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page -1, size);
-        return ResponseEntity.status(HttpStatus.OK).body(ApiResponse.success(refundService.getMyRefundList(userId, pageable)));
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success(refundService.getMyRefundList(userId, pageable)));
     }
 
 }
