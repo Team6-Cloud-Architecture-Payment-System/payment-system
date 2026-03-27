@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>견생보감 - Welcome</title>
+    <!-- thymeleaf support in case mapping through controller is standard -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Righteous&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/welcome.css">
+    <!-- adding thyneleaf relative link in case it gets rendered dynamically -->
+    <link rel="stylesheet" th:href="@{/css/welcome.css}" />
+</head>
+<body>
+    <!-- Background Carousel -->
+    <div class="carousel-container">
+        <!-- Using th:style to handle dynamic paths if necessary, alongside manual styles -->
+        <div class="carousel-slide" style="background-image: url('/images/bg-image6-1.png'); animation-delay: 0s;" th:style="'background-image: url(' + @{/images/bg-image6-1.png} + '); animation-delay: 0s;'"></div>
+        <div class="carousel-slide" style="background-image: url('/images/bg-image6-2.png'); animation-delay: 5s;" th:style="'background-image: url(' + @{/images/bg-image6-2.png} + '); animation-delay: 5s;'"></div>
+        <div class="carousel-slide" style="background-image: url('/images/bg-image6-3.png'); animation-delay: 10s;" th:style="'background-image: url(' + @{/images/bg-image6-3.png} + '); animation-delay: 10s;'"></div>
+    </div>
+
+    <!-- Foreground Content -->
+    <div class="welcome-content">
+        <div class="logo-wrapper">
+            <div class="hover-hint">Click To Start!</div>
+            <h1 class="welcome-title" id="logo-trigger">견생보감</h1>
+        </div>
+        <p class="welcome-subtitle">Team 6하은칙 : 임하은, 선경안, 정호진, 정태규, 정채림</p>
+    </div>
+
+    <!-- Transition Overlay -->
+    <div class="transition-overlay" id="transition-overlay"></div>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            const logo = document.getElementById('logo-trigger');
+            const overlay = document.getElementById('transition-overlay');
+            let isTriggered = false;
+
+            // Optional Thymeleaf context path handling for dynamic environments
+            /*<![CDATA[*/
+            const loginUrl = /*[[@{/pages/login}]]*/ '/pages/login';
+            /*]]>*/
+
+            logo.addEventListener('click', () => {
+                if(isTriggered) return;
+                isTriggered = true;
+
+                // Add fullscreen wipe animation
+                overlay.classList.add('is-active');
+
+                // Redirect precisely when the screen is fully black (0.8s animation duration)
+                setTimeout(() => {
+                    window.location.href = loginUrl;
+                }, 800);
+            });
+        });
+    </script>
+</body>
+</html>

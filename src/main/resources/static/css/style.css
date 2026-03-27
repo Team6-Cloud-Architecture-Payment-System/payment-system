@@ -1,21 +1,21 @@
 /* Modern Commerce Demo UI - Responsive 2-Column Layout */
 
 :root {
-    /* Light Mode Colors */
-    --primary: #4f46e5;
-    --primary-dark: #4338ca;
-    --secondary: #06b6d4;
-    --success: #10b981;
-    --warning: #f59e0b;
-    --danger: #ef4444;
+    /* Pop Art Light Mode Colors */
+    --primary: #000000;
+    --primary-dark: #000000;
+    --secondary: #ffffff;
+    --success: #000000;
+    --warning: #000000;
+    --danger: #000000;
     --bg-primary: #ffffff;
-    --bg-secondary: #f9fafb;
-    --bg-tertiary: #f3f4f6;
-    --text-primary: #111827;
-    --text-secondary: #6b7280;
-    --border: #e5e7eb;
-    --shadow: rgba(0, 0, 0, 0.1);
-    --shadow-lg: rgba(0, 0, 0, 0.15);
+    --bg-secondary: transparent;
+    --bg-tertiary: #ffffff;
+    --text-primary: #000000;
+    --text-secondary: #000000;
+    --border: #000000;
+    --shadow: #000000;
+    --shadow-lg: #000000;
 
     /* Spacing */
     --spacing-xs: 0.5rem;
@@ -24,28 +24,34 @@
     --spacing-lg: 2rem;
     --spacing-xl: 3rem;
 
-    /* Border Radius */
-    --radius-sm: 0.5rem;
-    --radius-md: 0.75rem;
-    --radius-lg: 1rem;
-    --radius-xl: 1.5rem;
+    /* Border Radius - Sharp Corners */
+    --radius-sm: 0;
+    --radius-md: 0;
+    --radius-lg: 0;
+    --radius-xl: 0;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
 }
 
 [data-theme="dark"] {
-    --primary: #6366f1;
-    --primary-dark: #4f46e5;
-    --secondary: #22d3ee;
-    --success: #34d399;
-    --warning: #fbbf24;
-    --danger: #f87171;
-    --bg-primary: #111827;
-    --bg-secondary: #1f2937;
-    --bg-tertiary: #374151;
-    --text-primary: #f9fafb;
-    --text-secondary: #9ca3af;
-    --border: #374151;
-    --shadow: rgba(0, 0, 0, 0.3);
-    --shadow-lg: rgba(0, 0, 0, 0.5);
+    /* Pop Art Dark Mode inverted */
+    --primary: #ffffff;
+    --primary-dark: #ffffff;
+    --secondary: #000000;
+    --success: #ffffff;
+    --warning: #ffffff;
+    --danger: #ffffff;
+    --bg-primary: #000000;
+    --bg-secondary: transparent;
+    --bg-tertiary: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: #ffffff;
+    --border: #ffffff;
+    --shadow: #ffffff;
+    --shadow-lg: #ffffff;
 }
 
 * {
@@ -55,8 +61,10 @@
 }
 
 body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    background: var(--bg-secondary);
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    background: #ffffff;
+    background-image: radial-gradient(var(--text-primary) 1px, transparent 1px);
+    background-size: 20px 20px;
     color: var(--text-primary);
     line-height: 1.6;
     transition: background-color 0.3s, color 0.3s;
@@ -65,11 +73,11 @@ body {
 /* Navbar */
 .navbar {
     background: var(--bg-primary);
-    border-bottom: 1px solid var(--border);
+    border-bottom: 4px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 1000;
-    box-shadow: 0 2px 10px var(--shadow);
+    box-shadow: 0 4px 0px var(--shadow);
 }
 
 .navbar-container {
@@ -83,13 +91,16 @@ body {
 }
 
 .navbar-brand {
-    font-size: 1.5rem;
+    font-family: 'Righteous', display;
+    font-size: 2rem;
+    text-transform: uppercase;
     font-weight: 700;
     color: var(--primary);
     text-decoration: none;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    letter-spacing: 1px;
 }
 
 .navbar-nav {
@@ -101,16 +112,18 @@ body {
 
 .nav-link {
     padding: 0.5rem 1rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     text-decoration: none;
     border-radius: var(--radius-md);
     transition: all 0.2s;
-    font-weight: 500;
+    font-weight: 800;
+    text-transform: uppercase;
 }
 
 .nav-link:hover, .nav-link.active {
-    background: var(--bg-tertiary);
-    color: var(--text-primary);
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    box-shadow: 4px 4px 0px var(--bg-primary), 4px 4px 0px 3px var(--text-primary);
 }
 
 .navbar-actions {
@@ -154,14 +167,11 @@ body {
     white-space: nowrap;
 }
 
-/* Main Layout - 2 Column */
+/* Main Layout - Single Column */
 .main-container {
-    max-width: 1600px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: var(--spacing-lg);
-    display: grid;
-    grid-template-columns: 1fr 400px;
-    gap: var(--spacing-lg);
 }
 
 /* Responsive Navbar */
@@ -190,16 +200,6 @@ body {
 }
 
 @media (max-width: 1200px) {
-    .main-container {
-        grid-template-columns: 1fr;
-    }
-
-    .api-panel {
-        position: sticky;
-        top: 80px;
-        max-height: calc(100vh - 100px);
-    }
-
     .navbar-nav {
         gap: 0.25rem;
     }
@@ -229,100 +229,23 @@ body {
     }
 }
 
-/* Content Area */
-.content-area {
-    background: var(--bg-primary);
-    padding: var(--spacing-lg);
-    border-radius: var(--radius-xl);
-    box-shadow: 0 4px 20px var(--shadow);
-}
+/* Content Area — styles with entrance animation defined in animation section below */
 
-/* API Panel (Right Side) */
-.api-panel {
-    background: var(--bg-primary);
-    border-radius: var(--radius-xl);
-    box-shadow: 0 4px 20px var(--shadow);
-    padding: var(--spacing-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
-    position: sticky;
-    top: 80px;
-    max-height: calc(100vh - 100px);
-    overflow-y: auto;
-}
-
-.panel-section {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-sm);
-}
-
-.panel-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.endpoint-badge {
-    background: var(--bg-tertiary);
-    padding: 0.5rem;
-    border-radius: var(--radius-sm);
-    font-family: 'Courier New', monospace;
-    font-size: 0.875rem;
-    color: var(--secondary);
-    word-break: break-all;
-}
-
-.api-textarea {
-    width: 100%;
-    min-height: 150px;
-    padding: var(--spacing-sm);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: var(--bg-secondary);
-    color: var(--text-primary);
-    font-family: 'Courier New', monospace;
-    font-size: 0.875rem;
-    resize: vertical;
-}
-
-.response-box {
-    background: var(--bg-secondary);
-    padding: var(--spacing-sm);
-    border-radius: var(--radius-md);
-    min-height: 200px;
-    max-height: 400px;
-    overflow-y: auto;
-    font-family: 'Courier New', monospace;
-    font-size: 0.875rem;
-    white-space: pre-wrap;
-    word-break: break-all;
-}
-
-.response-success {
-    color: var(--success);
-}
-
-.response-error {
-    color: var(--danger);
-}
+/* (API Panel CSS removed for production dog shop) */
 
 /* Cards */
 .card {
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
-    box-shadow: 0 2px 10px var(--shadow);
+    border: 3px solid var(--border);
+    box-shadow: 6px 6px 0px var(--shadow);
     transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px var(--shadow-lg);
+    transform: translate(-3px, -3px);
+    box-shadow: 9px 9px 0px var(--shadow);
 }
 
 .card-grid {
@@ -333,16 +256,22 @@ body {
 }
 
 .card-header {
+    font-family: 'Righteous', display;
     font-size: 1.5rem;
     font-weight: 700;
     margin-bottom: var(--spacing-sm);
     color: var(--text-primary);
+    text-transform: uppercase;
 }
 
 .card-subtitle {
+    font-weight: 800;
     font-size: 1rem;
-    color: var(--text-secondary);
+    color: var(--text-primary);
     margin-bottom: var(--spacing-md);
+    border: 2px solid var(--border);
+    padding: 0.25rem 0.5rem;
+    display: inline-block;
 }
 
 .card-body {
@@ -354,74 +283,75 @@ body {
 /* Buttons */
 .btn {
     padding: 0.75rem 1.5rem;
-    border: none;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border: 3px solid var(--border);
     border-radius: var(--radius-md);
-    font-weight: 600;
+    font-weight: 800;
+    font-family: 'Righteous', display;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s;
+    box-shadow: 4px 4px 0px var(--shadow);
+    transition: all 0.1s;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     justify-content: center;
     text-decoration: none;
     font-size: 1rem;
+    letter-spacing: 1px;
 }
 
 .btn:disabled {
-    opacity: 0.5;
+    opacity: 0.6;
+    background: #e0e0e0;
+    box-shadow: none;
+    transform: none;
     cursor: not-allowed;
 }
 
 .btn-primary {
     background: var(--primary);
-    color: white;
+    color: var(--secondary);
 }
 
-.btn-primary:hover:not(:disabled) {
-    background: var(--primary-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px var(--shadow-lg);
+.btn:hover:not(:disabled) {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--shadow);
+}
+
+.btn:active:not(:disabled) {
+    transform: translate(4px, 4px);
+    box-shadow: 0px 0px 0px var(--shadow);
 }
 
 .btn-secondary {
-    background: var(--secondary);
-    color: white;
-}
-
-.btn-secondary:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .btn-success {
-    background: var(--success);
-    color: white;
-}
-
-.btn-success:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .btn-danger {
-    background: var(--danger);
-    color: white;
-}
-
-.btn-danger:hover:not(:disabled) {
-    opacity: 0.9;
-    transform: translateY(-1px);
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .btn-outline {
     background: transparent;
-    border: 2px solid var(--primary);
-    color: var(--primary);
+    border: 3px solid var(--border);
+    color: var(--text-primary);
+    box-shadow: 4px 4px 0px var(--shadow);
 }
 
 .btn-outline:hover:not(:disabled) {
-    background: var(--primary);
-    color: white;
+    background: var(--text-primary);
+    color: var(--bg-primary);
 }
 
 .btn-group {
@@ -445,17 +375,22 @@ body {
 
 .form-input, .form-select {
     padding: 0.75rem;
-    border: 1px solid var(--border);
+    border: 3px solid var(--border);
     border-radius: var(--radius-md);
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
     color: var(--text-primary);
     font-size: 1rem;
-    transition: border-color 0.2s;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    box-shadow: 4px 4px 0px var(--shadow);
+    transition: all 0.2s ease;
 }
 
 .form-input:focus, .form-select:focus {
     outline: none;
-    border-color: var(--primary);
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--shadow);
+    background: var(--bg-tertiary);
 }
 
 /* Product/Plan Cards */
@@ -463,14 +398,14 @@ body {
     background: var(--bg-primary);
     padding: var(--spacing-lg);
     border-radius: var(--radius-lg);
-    border: 2px solid var(--border);
+    border: 4px solid var(--border);
+    box-shadow: 8px 8px 0px var(--shadow);
     transition: all 0.2s;
 }
 
 .product-card:hover, .plan-card:hover {
-    border-color: var(--primary);
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px var(--shadow-lg);
+    transform: translate(-4px, -4px);
+    box-shadow: 12px 12px 0px var(--shadow);
 }
 
 .product-image {
@@ -502,27 +437,34 @@ body {
 .quantity-btn {
     width: 36px;
     height: 36px;
-    border: none;
-    background: var(--bg-tertiary);
+    border: 2px solid var(--border);
+    background: var(--bg-primary);
     border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 1.2rem;
-    transition: all 0.2s;
+    font-family: 'Righteous', display;
+    font-weight: bold;
+    box-shadow: 2px 2px 0px var(--shadow);
+    transition: all 0.1s;
 }
 
 .quantity-btn:hover {
-    background: var(--primary);
-    color: white;
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px var(--shadow);
 }
 
 .quantity-input {
     width: 60px;
     text-align: center;
     padding: 0.5rem;
-    border: 1px solid var(--border);
+    border: 2px solid var(--border);
     border-radius: var(--radius-sm);
-    background: var(--bg-secondary);
+    background: var(--bg-primary);
     color: var(--text-primary);
+    font-weight: 800;
+    box-shadow: inset 2px 2px 0px var(--shadow);
 }
 
 /* Features List */
@@ -547,17 +489,432 @@ body {
     font-size: 1.2rem;
 }
 
-/* Loading Skeleton */
+/* ============================================
+   SHIMMER SKELETON SYSTEM
+   ============================================ */
 .skeleton {
-    background: linear-gradient(90deg, var(--bg-tertiary) 25%, var(--bg-secondary) 50%, var(--bg-tertiary) 75%);
+    background: var(--bg-primary);
+    background-image: linear-gradient(
+        110deg,
+        var(--bg-primary) 8%,
+        var(--bg-secondary, #f5f5f5) 18%,
+        var(--bg-primary) 33%
+    );
     background-size: 200% 100%;
-    animation: loading 1.5s infinite;
+    animation: shimmer 1.2s linear infinite;
     border-radius: var(--radius-md);
 }
 
-@keyframes loading {
+[data-theme="dark"] .skeleton {
+    background: var(--bg-primary);
+    background-image: linear-gradient(
+        110deg,
+        var(--bg-primary) 8%,
+        #222222 18%,
+        var(--bg-primary) 33%
+    );
+    background-size: 200% 100%;
+}
+
+@keyframes shimmer {
     0% { background-position: 200% 0; }
     100% { background-position: -200% 0; }
+}
+
+/* Skeleton card container */
+.skeleton-card {
+    background: var(--bg-primary);
+    border: 4px solid var(--border);
+    box-shadow: 8px 8px 0px var(--shadow);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    opacity: 0.7;
+}
+
+.skeleton-image {
+    width: 100%;
+    height: 200px;
+    background: var(--bg-primary);
+    background-image: linear-gradient(110deg, var(--bg-primary) 8%, var(--bg-secondary, #f0f0f0) 18%, var(--bg-primary) 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s linear infinite;
+    border: 2px solid var(--border);
+}
+
+.skeleton-text {
+    height: 1rem;
+    background: var(--bg-primary);
+    background-image: linear-gradient(110deg, var(--bg-primary) 8%, var(--bg-secondary, #f0f0f0) 18%, var(--bg-primary) 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s linear infinite;
+    border: 2px solid var(--border);
+}
+
+.skeleton-text.short { width: 40%; }
+.skeleton-text.medium { width: 65%; }
+.skeleton-text.long { width: 90%; }
+
+.skeleton-row {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.skeleton-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    background-image: linear-gradient(110deg, var(--bg-primary) 8%, var(--bg-secondary, #f0f0f0) 18%, var(--bg-primary) 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s linear infinite;
+    border: 2px solid var(--border);
+    flex-shrink: 0;
+}
+
+.skeleton-btn {
+    height: 42px;
+    background: var(--bg-primary);
+    background-image: linear-gradient(110deg, var(--bg-primary) 8%, var(--bg-secondary, #f0f0f0) 18%, var(--bg-primary) 33%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s linear infinite;
+    border: 3px solid var(--border);
+    box-shadow: 4px 4px 0px var(--shadow);
+    margin-top: auto;
+}
+
+/* Skeleton table row */
+.skeleton-table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+    gap: 0;
+    border-bottom: 3px solid var(--border);
+}
+
+.skeleton-table-cell {
+    padding: 1rem;
+    border-right: 3px solid var(--border);
+}
+
+.skeleton-table-cell:last-child {
+    border-right: none;
+}
+
+/* ============================================
+   ENTRANCE ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes slideInLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Entrance utility classes */
+.anim-fade-in-up {
+    animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-fade-in-scale {
+    animation: fadeInScale 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-slide-in-left {
+    animation: slideInLeft 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-slide-in-right {
+    animation: slideInRight 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Stagger items — JS injects animation-delay inline */
+.stagger-item {
+    opacity: 0;
+    animation: fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Content reveal after skeleton */
+/* transform을 쓰는 fadeInScale 대신 opacity만 사용 — 모달 stacking context 보호 */
+.content-reveal {
+    animation: fadeIn 0.35s ease both;
+}
+
+/* ============================================
+   PAGE TRANSITION OVERLAY
+   ============================================ */
+.page-transition-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--text-primary);
+    z-index: 9990;
+    pointer-events: none;
+    transform: scaleY(0);
+    transform-origin: bottom;
+    transition: transform 0.45s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.page-transition-overlay.entering {
+    transform: scaleY(1);
+    transform-origin: bottom;
+}
+
+.page-transition-overlay.leaving {
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform 0.45s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Page content initial hidden for entrance */
+/* IMPORTANT: position:fixed 자식(모달)이 올바르게 뷰포트 기준으로 배치되도록
+   transform이 포함된 fadeInUp 대신 opacity만 사용하는 fadeIn을 적용합니다.
+   transform이 있는 애니메이션은 새로운 stacking context를 만들어
+   position:fixed 자식들의 배치가 뷰포트 대신 .content-area 기준으로 바뀝니다. */
+.content-area {
+    background: var(--bg-primary);
+    padding: var(--spacing-lg);
+    border-radius: var(--radius-xl);
+    border: 3px solid var(--border);
+    box-shadow: 8px 8px 0px var(--shadow);
+    animation: fadeIn 0.5s ease 0.05s both;
+}
+
+/* ============================================
+   NOTIFICATION SLIDE SYSTEM
+   ============================================ */
+@keyframes notifSlideIn {
+    from {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes notifSlideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(120%);
+        opacity: 0;
+    }
+}
+
+.notification-toast {
+    position: fixed;
+    right: 20px;
+    z-index: 9999;
+    min-width: 320px;
+    max-width: 420px;
+    padding: 1rem 1.25rem;
+    border: 3px solid var(--border);
+    box-shadow: 6px 6px 0px var(--shadow);
+    font-weight: 700;
+    font-size: 0.95rem;
+    animation: notifSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
+    overflow: hidden;
+}
+
+.notification-toast.dismissing {
+    animation: notifSlideOut 0.35s cubic-bezier(0.55, 0, 1, 0.45) both;
+}
+
+.notification-toast .notif-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background: var(--text-primary);
+    transition: width linear;
+}
+
+.notification-toast.toast-success {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-left: 6px solid var(--text-primary);
+}
+
+.notification-toast.toast-error {
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    border-left: 6px solid var(--bg-primary);
+}
+
+.notification-toast.toast-warning {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-style: dashed;
+    border-left-style: solid;
+    border-left-width: 6px;
+}
+
+.notification-toast.toast-info {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-left: 6px solid var(--text-primary);
+}
+
+/* ============================================
+   MODAL TRANSITION ENHANCEMENTS
+   ============================================ */
+.modal-backdrop {
+    transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+}
+
+.modal-content-animated {
+    transform: scale(0.92) translateY(10px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+                opacity 0.3s ease;
+}
+
+.modal-content-animated.visible {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+}
+
+.modal-content-animated.closing {
+    transform: scale(0.95) translateY(5px);
+    opacity: 0;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+/* ============================================
+   PROGRESS BAR STRIPE
+   ============================================ */
+@keyframes progressStripe {
+    0% { background-position: 0 0; }
+    100% { background-position: 40px 0; }
+}
+
+.progress-striped {
+    background-image: linear-gradient(
+        45deg,
+        rgba(255,255,255,0.15) 25%,
+        transparent 25%,
+        transparent 50%,
+        rgba(255,255,255,0.15) 50%,
+        rgba(255,255,255,0.15) 75%,
+        transparent 75%,
+        transparent
+    );
+    background-size: 40px 40px;
+    animation: progressStripe 1s linear infinite;
+}
+
+/* ============================================
+   PULSE & GLOW ANIMATIONS
+   ============================================ */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.06); }
+}
+
+@keyframes glowPulse {
+    0%, 100% { box-shadow: 8px 8px 0px var(--shadow); }
+    50% { box-shadow: 12px 12px 0px var(--shadow), 0 0 20px rgba(0,0,0,0.1); }
+}
+
+.anim-pulse {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+.anim-glow-pulse {
+    animation: glowPulse 2s ease-in-out infinite;
+}
+
+/* ============================================
+   SCROLL ANIMATION (Intersection Observer)
+   ============================================ */
+.animate-on-scroll {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.animate-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* ============================================
+   MICRO-INTERACTIONS
+   ============================================ */
+/* Button hover ripple hint — overflow:hidden은 기존 .btn 정의에 이미 있음 */
+/* .btn::after 는 제거: position:absolute 자식이 모달 레이아웃에 영향을 줄 수 있음 */
+
+/* Card hover pop effect override for interactive card */
+.product-card, .plan-card {
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.product-card:hover, .plan-card:hover {
+    transform: translate(-4px, -4px) rotate(-0.5deg);
+    box-shadow: 12px 12px 0px var(--shadow);
+}
+
+/* Count-up number emphasis */
+.count-up {
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+/* Skeleton fade-out utility */
+.skeleton-fade-out {
+    animation: fadeOut 0.3s ease both;
 }
 
 /* Alerts */
@@ -565,41 +922,42 @@ body {
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     margin-bottom: var(--spacing-md);
+    border: 3px solid var(--border);
+    box-shadow: 6px 6px 0px var(--shadow);
+    font-weight: 700;
 }
 
 .alert-info {
-    background: rgba(6, 182, 212, 0.1);
-    border: 1px solid var(--secondary);
-    color: var(--secondary);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-style: dashed;
 }
 
 .alert-success {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid var(--success);
-    color: var(--success);
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .alert-warning {
-    background: rgba(245, 158, 11, 0.1);
-    border: 1px solid var(--warning);
-    color: var(--warning);
+    background: var(--bg-primary);
+    color: var(--text-primary);
 }
 
 .alert-danger {
-    background: rgba(239, 68, 68, 0.1);
-    border: 1px solid var(--danger);
-    color: var(--danger);
+    background: var(--text-primary);
+    color: var(--bg-primary);
 }
 
 /* Code Block */
 .code-block {
-    background: var(--bg-secondary);
+    background: var(--bg-tertiary);
     padding: var(--spacing-md);
     border-radius: var(--radius-md);
     overflow-x: auto;
     font-family: 'Courier New', monospace;
     font-size: 0.875rem;
-    border: 1px solid var(--border);
+    border: 3px solid var(--border);
+    box-shadow: inset 2px 2px 0px var(--shadow);
 }
 
 /* Utility Classes */
@@ -658,4 +1016,72 @@ body {
     font-weight: 700;
     margin-top: var(--spacing-md);
     color: var(--primary);
+}
+
+/* Cart Modal — 네비(1000) 위, 토스트(9999) 아래; body 직속일 때 전체 화면 덮음 */
+.cart-modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    opacity: 0;
+    pointer-events: none;
+    /* transition을 JS 인라인 style로 관리 — CSS transition 제거 */
+}
+
+.cart-modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.cart-modal-content {
+    background: var(--bg-primary);
+    width: 95%;
+    max-width: 500px;
+    border: 4px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: 12px 12px 0px var(--shadow);
+    padding: var(--spacing-lg);
+    position: relative;
+    /* transform/transition을 JS 인라인 style로 관리 — CSS 제거 */
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+/* .cart-modal-overlay.active .cart-modal-content transform 또한 JS가 관리 */
+
+.cart-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    line-height: 1;
+    color: var(--text-primary);
+    transition: transform 0.1s;
+}
+
+.cart-modal-close:hover {
+    transform: scale(1.1);
+}
+
+/* Footer — 모달(z-index 9k대)·토스트(9999)보다 아래 레이어에 고정 */
+.footer {
+    position: relative;
+    z-index: 0;
+    background: var(--bg-primary);
+    border-top: 5px solid var(--border);
+    padding: var(--spacing-xl) var(--spacing-lg);
+    margin-top: var(--spacing-xl);
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
 }

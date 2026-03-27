@@ -15,8 +15,20 @@ async function makeApiRequest(endpointKey, options = {}) {
         body = null,
         params = {},
         pathParams = {},
+        queryParams = null,
         returnHeaders = false
     } = options;
+
+    const isApiResponse = (value) => {
+        // 백엔드 공통 응답: { success, data, message }
+        return (
+            value &&
+            typeof value === 'object' &&
+            Object.prototype.hasOwnProperty.call(value, 'success') &&
+            Object.prototype.hasOwnProperty.call(value, 'data') &&
+            Object.prototype.hasOwnProperty.call(value, 'message')
+        );
+    };
 
     try {
         // 설정에서 엔드포인트 계약 가져오기
@@ -31,7 +43,18 @@ async function makeApiRequest(endpointKey, options = {}) {
         const method = options.method || endpointContract.method || 'GET';
 
         // URL 생성
-        const url = await buildApiUrl(endpointKey, pathParams);
+        let url = await buildApiUrl(endpointKey, pathParams);
+
+        // 쿼리 파라미터 추가 (params 또는 queryParams 사용 가능)
+        const qp = queryParams || (Object.keys(params).length > 0 ? params : null);
+        if (qp && typeof qp === 'object' && Object.keys(qp).length > 0) {
+            const qs = new URLSearchParams();
+            Object.entries(qp).forEach(([k, v]) => {
+                if (v !== undefined && v !== null) qs.append(k, v);
+            });
+            const qsStr = qs.toString();
+            if (qsStr) url += (url.includes('?') ? '&' : '?') + qsStr;
+        }
 
         // 엔드포인트 표시 업데이트
         updateEndpointDisplay(method, url);
@@ -82,6 +105,12 @@ async function makeApiRequest(endpointKey, options = {}) {
             // HTTP 에러 발생 시 예외 throw
             const errorMessage = data.message || data.error || `HTTP ${response.status}: ${response.statusText}`;
             throw new Error(errorMessage);
+        }
+
+        // ApiResponse 래핑 응답 공통 처리
+        if (isApiResponse(data) && data.success === false) {
+            displayError(data);
+            throw new Error(data.message || 'API 요청 실패');
         }
 
         displaySuccess(data);
@@ -240,20 +269,25 @@ function formatCurrency(amount, currency = 'KRW') {
 
 /**
  * 헬퍼: 알림 표시
+ * 향상된 버전은 ui-effects.js에서 제공됩니다.
+ * ui-effects.js가 로드되지 않았을 때의 폴백입니다.
  */
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type}`;
-    notification.textContent = message;
-    notification.style.position = 'fixed';
-    notification.style.top = '100px';
-    notification.style.right = '20px';
-    notification.style.zIndex = '9999';
-    notification.style.minWidth = '300px';
+if (typeof showNotification === 'undefined') {
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type}`;
+        notification.textContent = message;
+        notification.style.position = 'fixed';
+        notification.style.top = '100px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '9999';
+        notification.style.minWidth = '300px';
 
-    document.body.appendChild(notification);
+        document.body.appendChild(notification);
 
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
 }
+

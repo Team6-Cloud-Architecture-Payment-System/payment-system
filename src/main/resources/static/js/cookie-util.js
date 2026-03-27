@@ -51,6 +51,14 @@ function saveToken(token) {
 }
 
 /**
+ * 리프레시 토큰 저장 (쿠키) — 로그아웃 등에서 서버에 전달
+ * @param {string} token - 리프레시 JWT
+ */
+function saveRefreshToken(token) {
+    setCookie('jwt_refresh_token', token, 14);
+}
+
+/**
  * JWT 토큰 조회 (쿠키)
  * @returns {string|null} JWT 토큰 또는 null
  */
@@ -59,10 +67,19 @@ function getToken() {
 }
 
 /**
+ * 리프레시 토큰 조회 (쿠키)
+ * @returns {string|null}
+ */
+function getRefreshToken() {
+    return getCookie('jwt_refresh_token');
+}
+
+/**
  * JWT 토큰 삭제 (쿠키)
  */
 function removeToken() {
     deleteCookie('jwt_token');
+    deleteCookie('jwt_refresh_token');
 }
 
 /**

@@ -1,0 +1,21 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: false
+  # Security 에러 방지용, RDS를 쓰더라도 H2 설정을 켜줌
+  h2:
+    console:
+      enabled: true
+api:
+  base-url: https://api.dogpedia.store

@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html th:fragment="layout(title, content)" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${title} + ' - Commerce Demo'">Commerce Demo</title>
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+    <title th:replace="${title}">견생보감</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Righteous&display=swap" rel="stylesheet">
 
     <!-- Styles -->
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -12,87 +16,54 @@
     <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
 
     <!-- Common Scripts -->
+    <script th:src="@{/js/cookie-util.js}"></script>
     <script th:src="@{/js/app-config.js}"></script>
+    <script th:src="@{/js/ui-effects.js}"></script>
     <script th:src="@{/js/api-handler.js}"></script>
+    <script th:src="@{/js/api-validator.js}"></script>
     <script th:src="@{/js/theme.js}"></script>
     <script th:src="@{/js/portone-sdk.js}"></script>
+    <script th:src="@{/js/auth-check.js}"></script>
 </head>
 <body>
+    <!-- Page Transition Overlay -->
+    <div class="page-transition-overlay" id="page-transition-overlay"></div>
+
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="navbar-container">
             <a href="/" class="navbar-brand">
-                <span>🏪 CommerceHub</span>
+                <span class="pop-title" style="color: #fff; margin: 0; font-size: 2rem; -webkit-text-stroke: 1px #000; text-shadow: 3px 3px 0px #000;">🐶 견생보감</span>
             </a>
 
             <ul class="navbar-nav">
-                <li><a href="/" class="nav-link">Home</a></li>
-                <li><a href="/pages/shop" class="nav-link">Shop</a></li>
+                <li><a href="/home" class="nav-link">Home</a></li>
                 <li><a href="/pages/orders" class="nav-link">Orders</a></li>
                 <li><a href="/pages/plans" class="nav-link">Plans</a></li>
-                <li><a href="/pages/subscribe" class="nav-link">Subscribe</a></li>
-                <li><a href="/pages/subscriptions" class="nav-link">Subscriptions</a></li>
-                <li><a href="/config" class="nav-link">Config</a></li>
+                <!-- <li><a href="/pages/subscribe" class="nav-link">Subscribe</a></li> -->
+                <!-- <li><a href="/pages/subscriptions" class="nav-link">Subscriptions</a></li> -->
+                <li><a href="/pages/mypage" class="nav-link">My Page</a></li>
             </ul>
 
             <div class="navbar-actions">
-                <div class="config-badge-container">
-                    <span class="config-badge skeleton" style="width: 100px; height: 24px;"></span>
-                </div>
-                <button id="theme-toggle" class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Container (2-Column Layout) -->
+    <!-- Main Content Container (1-Column Layout for Dog Shop) -->
     <div class="main-container">
-        <!-- Left: Page Content -->
         <div class="content-area">
             <div th:replace="${content}"></div>
         </div>
-
-        <!-- Right: API Panel -->
-        <div class="api-panel">
-            <div class="panel-section">
-                <h3 class="panel-title">📡 Current Endpoint</h3>
-                <div id="current-endpoint" class="endpoint-badge">
-                    No request yet
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <h3 class="panel-title">📤 Request</h3>
-                <div class="form-group">
-                    <label class="form-label">Method</label>
-                    <select id="request-method" class="form-select">
-                        <option value="GET">GET</option>
-                        <option value="POST" selected>POST</option>
-                        <option value="PUT">PUT</option>
-                        <option value="DELETE">DELETE</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Custom URL (optional)</label>
-                    <input type="text" id="custom-endpoint" class="form-input" placeholder="http://localhost:8080/api/...">
-                </div>
-                <label class="form-label">Body (JSON)</label>
-                <textarea id="request-body" class="api-textarea" placeholder='{\n  "example": "data"\n}'></textarea>
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="sendCustomRequest()">Send Custom</button>
-                    <button class="btn btn-outline" onclick="clearResponse()">Clear</button>
-                </div>
-            </div>
-
-            <div class="panel-section">
-                <h3 class="panel-title">📥 Response</h3>
-                <pre id="response-output" class="response-box">Waiting for request...</pre>
-            </div>
-        </div>
     </div>
 
-    <!-- Page-specific scripts -->
-    <th:block th:if="${pageScript}">
-        <script th:src="@{${pageScript}}"></script>
-    </th:block>
+    <!-- Global Footer -->
+    <footer class="footer animate-on-scroll">
+        <div class="footer-content text-center">
+            <h4 style="font-family: 'Righteous', display; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 0.5rem; text-transform: uppercase;">🐾 Team 6하은칙</h4>
+            <p style="font-weight: 800; font-size: 1rem; color: var(--text-secondary);">임하은, 선경안, 정호진, 정태규, 정채림</p>
+        </div>
+    </footer>
 </body>
 </html>

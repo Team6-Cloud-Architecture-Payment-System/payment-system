@@ -110,8 +110,9 @@ async function buildApiUrl(endpointKey, params = {}) {
         throw new Error(`엔드포인트 '${endpointKey}'를 설정에서 찾을 수 없습니다`);
     }
 
-    // URL 가져오기
+    // URL 가져오기 (절대 URL이면 api.base-url 를 붙이지 않음)
     let url = endpointContract.url;
+    const isAbsoluteUrl = /^https?:\/\//i.test(url);
 
     // URL에서 경로 파라미터 이름 추출 (예: /api/payments/{paymentId} → ['paymentId'])
     const urlParamNames = (url.match(/\{([^}]+)\}/g) || [])
@@ -119,7 +120,7 @@ async function buildApiUrl(endpointKey, params = {}) {
 
     // 파라미터가 없으면 바로 반환
     if (urlParamNames.length === 0) {
-        return config.api.baseUrl + url;
+        return isAbsoluteUrl ? url : config.api.baseUrl + url;
     }
 
     // params를 정규화: string이나 array를 object로 변환
@@ -163,7 +164,7 @@ async function buildApiUrl(endpointKey, params = {}) {
         );
     }
 
-    return config.api.baseUrl + url;
+    return isAbsoluteUrl ? url : config.api.baseUrl + url;
 }
 
 // 페이지 로드 시 자동으로 설정 로드
