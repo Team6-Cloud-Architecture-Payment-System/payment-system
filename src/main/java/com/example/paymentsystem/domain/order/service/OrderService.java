@@ -166,7 +166,8 @@ public class OrderService {
     public void confirmOrder(Long userId, Long orderId) {
 
         // 해당 주문이 존재하는지 + 내 주문이 맞는지 확인
-        Order order = orderRepository.findByIdAndUserId(orderId, userId)
+        // 비관적 락으로 잠가서 자동 확정 배치와 동시에 들어와도 포인트가 중복 적립되지 않게 함
+        Order order = orderRepository.findByIdAndUserIdWithPessimisticLock(orderId, userId)
                 .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
 
         // 공통 주문 확정 처리
@@ -182,8 +183,12 @@ public class OrderService {
         List<Order> orders = orderRepository.findOrdersReadyForAutoConfirm(targetTime);
 
         for (Order order : orders) {
+            // 건별로 다시 락을 잡아 사용자의 수동 확정과 경합해도 한쪽만 처리되게 함
+            Order lockedOrder = orderRepository.findByIdWithPessimisticLock(order.getId())
+                    .orElseThrow(() -> new ServiceException(ErrorCode.ORDER_NOT_FOUND));
+
             // 공통 주문 확정 처리
-            confirmAndReward(order);
+            confirmAndReward(lockedOrder);
         }
     }
 
@@ -207,7 +212,8 @@ public class OrderService {
         List<OrderItem> orderItems = order.getOrderItems();
 
         for (OrderItem item : orderItems) {
-            Product product = productRepository.findById(item.getProductId())
+            // 비관적 락으로 row를 잠근 뒤 재고를 다시 확인하고 차감 (동시 주문에 대한 TOCTOU 방지)
+            Product product = productRepository.findByIdWithPessimisticLock(item.getProductId())
                     .orElseThrow(() -> new ServiceException(ErrorCode.PRODUCT_NOT_FOUND));
 
             product.removeStock(item.getQuantity());
